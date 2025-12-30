@@ -1,0 +1,35 @@
+<li id="property-{{ prop.id }}">
+  <div style="display: flex; gap: 12px; align-items: flex-start;">
+    <div style="width: 90px; flex: 0 0 90px;">
+      {% for img in prop.images.all|slice:":1" %}
+        <img src="{{ img.image.url }}" alt="{{ prop.title }}" width="90" height="68" loading="lazy" style="object-fit: cover; border-radius: 8px; border: 1px solid #eee;" />
+      {% empty %}
+        <div class="muted" style="border: 1px dashed #ddd; border-radius: 8px; height: 68px; display: flex; align-items: center; justify-content: center;">
+          No photo
+        </div>
+      {% endfor %}
+    </div>
+
+    <div style="flex: 1;">
+      <div style="display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap;">
+        <strong>{{ prop.title }}</strong>
+        <span class="muted">({{ prop.get_status_display }})</span>
+        {% if prop.price %}<span class="muted">• ${{ prop.price }}</span>{% endif %}
+        <span class="muted">• {{ prop.images.all|length }} photos</span>
+      </div>
+      {% if prop.address %}<div class="muted">{{ prop.address }}</div>{% endif %}
+      {% if prop.description %}<div class="muted">{{ prop.description|truncatechars:140 }}</div>{% endif %}
+    </div>
+  </div>
+
+  <div class="actions">
+    <a href="{% url 'property_edit' prop.id %}"><button type="button">Edit</button></a>
+
+    <form hx-post="{% url 'property_delete' prop.id %}"
+          hx-target="#properties"
+          hx-swap="outerHTML">
+      {% csrf_token %}
+      <button type="submit">Delete</button>
+    </form>
+  </div>
+</li>

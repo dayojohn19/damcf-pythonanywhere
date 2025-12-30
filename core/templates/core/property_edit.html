@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Property{% endblock %}
+
+{% block content %}
+  <h1>Edit Property</h1>
+  <p class="muted"><a href="{% url 'properties_index' %}">← Back to Properties</a></p>
+
+  <div class="card" style="margin-bottom: 16px;">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <div class="row" style="margin-bottom: 10px;">
+        <input type="text" name="title" value="{{ property.title }}" placeholder="Title" autocomplete="off" />
+        <select name="status" style="padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+          {% for value,label in status_choices %}
+            <option value="{{ value }}" {% if property.status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="row" style="margin-bottom: 10px;">
+        <input type="text" name="price" value="{% if property.price %}{{ property.price }}{% endif %}" placeholder="Price (e.g. 350000)" autocomplete="off" />
+        <input type="text" name="address" value="{{ property.address }}" placeholder="Address" autocomplete="off" />
+      </div>
+
+      <div style="margin-bottom: 10px;">
+        <textarea name="description" placeholder="Description" style="width: 100%; min-height: 90px; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">{{ property.description }}</textarea>
+      </div>
+
+      <button type="submit">Save</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h3 style="margin-top: 0;">Photos</h3>
+
+    <form class="row"
+          hx-post="{% url 'property_edit' property.id %}"
+          hx-target="#property-images"
+          hx-swap="outerHTML"
+          hx-encoding="multipart/form-data"
+          enctype="multipart/form-data">
+      {% csrf_token %}
+      <input type="file" name="images" multiple />
+      <button type="submit">Upload</button>
+    </form>
+
+    <div style="margin-top: 14px;">
+      {% include "core/_property_images.html" %}
+    </div>
+  </div>
+{% endblock %}

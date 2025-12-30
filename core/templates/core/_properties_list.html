@@ -1,0 +1,35 @@
+<div id="properties">
+  <ul>
+    {% for prop in page_obj.object_list %}
+      {% include "core/_property_row.html" %}
+    {% empty %}
+      <li><span class="muted">No properties yet.</span></li>
+    {% endfor %}
+  </ul>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+    <div class="row" style="justify-content: space-between; margin-top: 12px;">
+      <div class="muted">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      </div>
+      <div class="actions">
+        {% if page_obj.has_previous %}
+          <a href="?page={{ page_obj.previous_page_number }}"
+             hx-get="?page={{ page_obj.previous_page_number }}"
+             hx-target="#properties"
+             hx-swap="outerHTML">
+            <button type="button">Prev</button>
+          </a>
+        {% endif %}
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}"
+             hx-get="?page={{ page_obj.next_page_number }}"
+             hx-target="#properties"
+             hx-swap="outerHTML">
+            <button type="button">Next</button>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</div>

@@ -1,0 +1,20 @@
+<div id="property-images">
+  <div class="muted" style="margin-bottom: 10px;">{{ property.images.all|length }} uploaded photos</div>
+
+  <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;">
+    {% for img in property.images.all %}
+      <div style="border: 1px solid #eee; border-radius: 10px; padding: 10px;">
+        <img src="{{ img.image.url }}" alt="Photo" loading="lazy" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid #eee;" />
+        <form style="margin-top: 10px;"
+              hx-post="{% url 'property_image_delete' img.id %}"
+              hx-target="#property-images"
+              hx-swap="outerHTML">
+          {% csrf_token %}
+          <button type="submit">Delete photo</button>
+        </form>
+      </div>
+    {% empty %}
+      <div class="muted">No photos uploaded yet.</div>
+    {% endfor %}
+  </div>
+</div>

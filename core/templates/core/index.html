@@ -1,23 +1,43 @@
 {% extends "base.html" %}
 
-{% block title %}Reactive Notes{% endblock %}
+{% block title %}Real Estate{% endblock %}
 
 {% block content %}
-  <h1>Reactive Notes</h1>
-  <p class="muted">Add/toggle/delete without full page reload (HTMX).</p>
+  <h1>Real Estate</h1>
+  <p class="muted">Create/edit/delete properties fast (HTMX list updates).</p>
+  <p class="muted"><a href="{% url 'notes_index' %}">Notes demo</a></p>
 
   <div class="card">
-    <form class="row"
-          hx-post="{% url 'note_create' %}"
-          hx-target="#notes"
-          hx-swap="outerHTML">
+    <form style="margin-top: 10px;"
+          hx-post="{% url 'property_create' %}"
+          hx-target="#properties"
+          hx-swap="outerHTML"
+          hx-encoding="multipart/form-data"
+          enctype="multipart/form-data">
       {% csrf_token %}
-      <input type="text" name="text" placeholder="Write a note..." autocomplete="off" />
-      <button type="submit">Add</button>
+      <div class="row" style="margin-bottom: 10px;">
+        <input type="text" name="title" placeholder="Title (required)" autocomplete="off" />
+        <input type="text" name="price" placeholder="Price (e.g. 350000)" autocomplete="off" />
+      </div>
+      <div class="row" style="margin-bottom: 10px;">
+        <input type="text" name="address" placeholder="Address" autocomplete="off" />
+        <select name="status" style="padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+          <option value="for_sale">For sale</option>
+          <option value="for_rent">For rent</option>
+          <option value="sold">Sold</option>
+        </select>
+      </div>
+      <div style="margin-bottom: 10px;">
+        <textarea name="description" placeholder="Description" style="width: 100%; min-height: 70px; padding: 10px; border-radius: 8px; border: 1px solid #ccc;"></textarea>
+      </div>
+      <div class="row">
+        <input type="file" name="images" multiple />
+        <button type="submit">Add Property</button>
+      </div>
     </form>
 
-    <div id="notes">
-      {% include "core/_notes_list.html" %}
+    <div style="margin-top: 12px;">
+      {% include "core/_properties_list.html" %}
     </div>
   </div>
 {% endblock %}

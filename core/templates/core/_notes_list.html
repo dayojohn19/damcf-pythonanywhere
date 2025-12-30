@@ -1,7 +1,9 @@
-<ul>
-  {% for note in notes %}
-    {% include "core/_note_row.html" %}
-  {% empty %}
-    <li><span class="muted">No notes yet.</span></li>
-  {% endfor %}
-</ul>
+<div id="notes">
+  <ul>
+    {% for note in notes %}
+      {% include "core/_note_row.html" %}
+    {% empty %}
+      <li><span class="muted">No notes yet.</span></li>
+    {% endfor %}
+  </ul>
+</div>
