@@ -1,0 +1,22 @@
+<li id="note-{{ note.id }}">
+  <div>
+    <span class="{% if note.done %}done{% endif %}">{{ note.text }}</span>
+    <div class="muted">{{ note.created_at|date:"Y-m-d H:i" }}</div>
+  </div>
+
+  <div class="actions">
+    <form hx-post="{% url 'note_toggle' note.id %}"
+          hx-target="#note-{{ note.id }}"
+          hx-swap="outerHTML">
+      {% csrf_token %}
+      <button type="submit">{% if note.done %}Undone{% else %}Done{% endif %}</button>
+    </form>
+
+    <form hx-post="{% url 'note_delete' note.id %}"
+          hx-target="#notes"
+          hx-swap="outerHTML">
+      {% csrf_token %}
+      <button type="submit">Delete</button>
+    </form>
+  </div>
+</li>

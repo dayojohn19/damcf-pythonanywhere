@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}Reactive Notes{% endblock %}
+
+{% block content %}
+  <h1>Reactive Notes</h1>
+  <p class="muted">Add/toggle/delete without full page reload (HTMX).</p>
+
+  <div class="card">
+    <form class="row"
+          hx-post="{% url 'note_create' %}"
+          hx-target="#notes"
+          hx-swap="outerHTML">
+      {% csrf_token %}
+      <input type="text" name="text" placeholder="Write a note..." autocomplete="off" />
+      <button type="submit">Add</button>
+    </form>
+
+    <div id="notes">
+      {% include "core/_notes_list.html" %}
+    </div>
+  </div>
+{% endblock %}
