@@ -4,3 +4,7 @@ whitenoise>=6.6
 dj-database-url>=2.2
 psycopg2-binary>=2.9
 Pillow>=10.0
+
+# Cloudinary storage for media uploads
+cloudinary>=1.32.0
+django-cloudinary-storage>=0.4.0
