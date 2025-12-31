@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 
 import dj_database_url
 from django.core.management.utils import get_random_secret_key
@@ -12,23 +13,28 @@ def _env_bool(value: str | None, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "t", "yes", "y", "on"}
 
 
-SECRET_KEY = (
-    (BASE_DIR / ".secret_key").read_text().strip()
-    if (BASE_DIR / ".secret_key").exists()
-    else get_random_secret_key()
-)
-SECRET_KEY = (  # allow override via environment
-    __import__("os").environ.get("SECRET_KEY") or SECRET_KEY
-)
+_secret_key_file = BASE_DIR / ".secret_key"
+if _secret_key_file.exists():
+    _file_secret_key = _secret_key_file.read_text().strip()
+else:
+    _file_secret_key = get_random_secret_key()
+    try:
+        _secret_key_file.write_text(_file_secret_key)
+    except OSError:
+        # In some deployed environments the filesystem may be read-only.
+        pass
 
-DEBUG = _env_bool(__import__("os").environ.get("DEBUG"), default=True)
+# Allow override via environment (recommended for production).
+SECRET_KEY = os.environ.get("SECRET_KEY") or _file_secret_key
 
-ALLOWED_HOSTS = ["*"] if DEBUG else [h for h in __import__("os").environ.get("ALLOWED_HOSTS", "").split(",") if h]
+DEBUG = _env_bool(os.environ.get("DEBUG"), default=True)
+
+ALLOWED_HOSTS = ["*"] if DEBUG else [h for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h]
 if not ALLOWED_HOSTS and not DEBUG:
     # Heroku sets `HEROKU_APP_NAME` sometimes; fallback to allow all if user forgot.
     ALLOWED_HOSTS = ["*"]
 
-CSRF_TRUSTED_ORIGINS = [o for o in __import__("os").environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o]
+CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -89,14 +95,27 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+if DEBUG:
+    # Avoid requiring `collectstatic` during local development.
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+else:
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
+
+# Optional: if set, new agent accounts created from /agents/ will use this password.
+# If unset/empty, a random temporary password is generated and shown to the superuser.
+AGENT_DEFAULT_PASSWORD = os.environ.get("AGENT_DEFAULT_PASSWORD", "")
+
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = _env_bool(__import__("os").environ.get("SECURE_SSL_REDIRECT"), default=not DEBUG)
+SECURE_SSL_REDIRECT = _env_bool(os.environ.get("SECURE_SSL_REDIRECT"), default=not DEBUG)
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds

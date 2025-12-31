@@ -8,24 +8,26 @@
   </ul>
 
   {% if page_obj.paginator.num_pages > 1 %}
-    <div class="row" style="justify-content: space-between; margin-top: 12px;">
+    <div class="row justify-between mt-3">
       <div class="muted">
         Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
       </div>
       <div class="actions">
         {% if page_obj.has_previous %}
-          <a href="?page={{ page_obj.previous_page_number }}"
-             hx-get="?page={{ page_obj.previous_page_number }}"
+          <a href="?page={{ page_obj.previous_page_number }}{% if selected_municipality_id %}&municipality={{ selected_municipality_id }}{% endif %}"
+             hx-get="?page={{ page_obj.previous_page_number }}{% if selected_municipality_id %}&municipality={{ selected_municipality_id }}{% endif %}"
              hx-target="#properties"
-             hx-swap="outerHTML">
+             hx-swap="outerHTML"
+             hx-push-url="true">
             <button type="button">Prev</button>
           </a>
         {% endif %}
         {% if page_obj.has_next %}
-          <a href="?page={{ page_obj.next_page_number }}"
-             hx-get="?page={{ page_obj.next_page_number }}"
+          <a href="?page={{ page_obj.next_page_number }}{% if selected_municipality_id %}&municipality={{ selected_municipality_id }}{% endif %}"
+             hx-get="?page={{ page_obj.next_page_number }}{% if selected_municipality_id %}&municipality={{ selected_municipality_id }}{% endif %}"
              hx-target="#properties"
-             hx-swap="outerHTML">
+             hx-swap="outerHTML"
+             hx-push-url="true">
             <button type="button">Next</button>
           </a>
         {% endif %}

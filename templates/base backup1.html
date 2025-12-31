@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Real Estate{% endblock %}</title>
+
+    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <meta name="csrf-token" content="{{ csrf_token }}" />
+    <script>
+      document.addEventListener("htmx:configRequest", (event) => {
+        const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
+        if (token) event.detail.headers["X-CSRFToken"] = token;
+      });
+    </script>
+
+    <script>
+      // Mobile nav toggle (works with HTMX swaps via event delegation)
+      document.addEventListener("click", (event) => {
+        const btn = event.target.closest?.("[data-nav-toggle]");
+        if (!btn) return;
+        const nav = document.getElementById("nav-links");
+        if (!nav) return;
+
+        const willOpen = !nav.classList.contains("open");
+        nav.classList.toggle("open", willOpen);
+        btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      });
+
+      // Close menu after navigation and after HTMX swaps
+      document.addEventListener("click", (event) => {
+        const link = event.target.closest?.("#nav-links a");
+        if (!link) return;
+        const nav = document.getElementById("nav-links");
+        const btn = document.querySelector("[data-nav-toggle]");
+        if (nav) nav.classList.remove("open");
+        if (btn) btn.setAttribute("aria-expanded", "false");
+      });
+
+      document.addEventListener("htmx:afterSwap", () => {
+        const nav = document.getElementById("nav-links");
+        const btn = document.querySelector("[data-nav-toggle]");
+        if (nav) nav.classList.remove("open");
+        if (btn) btn.setAttribute("aria-expanded", "false");
+      });
+    </script>
+
+    <style>
+      :root { color-scheme: light; }
+      * { box-sizing: border-box; }
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin: 0; background: #fff; color: #111; }
+      a { color: inherit; }
+
+      .container { max-width: 980px; margin: 0 auto; padding: 22px; }
+      .nav { border-bottom: 1px solid #eee; background: #fff; position: sticky; top: 0; z-index: 10; }
+      .nav-inner { display: flex; align-items: center; justify-content: space-between; gap: 16px; max-width: 980px; margin: 0 auto; padding: 14px 22px; }
+      .brand { font-weight: 700; letter-spacing: 0.2px; text-decoration: none; }
+      .nav-links { display: flex; gap: 14px; align-items: center; }
+      .link { text-decoration: none; color: #333; }
+      .link:hover { text-decoration: underline; }
+      .link-button { background: none; border: 0; padding: 0; font: inherit; color: #333; cursor: pointer; }
+      .link-button:hover { text-decoration: underline; }
+      .nav-toggle { display: none; padding: 8px 10px; border-radius: 10px; border: 1px solid #bbb; background: #f7f7f7; cursor: pointer; }
+      .nav-toggle-lines { display: grid; gap: 4px; }
+      .nav-toggle-lines span { display: block; width: 18px; height: 2px; background: #333; }
+
+      .h1 { font-size: 34px; line-height: 1.1; margin: 0; }
+      .h2 { font-size: 18px; margin: 0; }
+
+      .card { border: 1px solid #eee; border-radius: 14px; padding: 16px; background: #fff; }
+      .row { display: flex; gap: 10px; align-items: center; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+      .muted { color: #666; font-size: 14px; }
+
+      input[type=text], input[type=email] { flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #ccc; }
+      .select { padding: 10px; border-radius: 10px; border: 1px solid #ccc; background: #fff; }
+      .textarea { width: 100%; min-height: 90px; padding: 10px; border-radius: 10px; border: 1px solid #ccc; }
+
+      button { padding: 10px 12px; border-radius: 10px; border: 1px solid #bbb; background: #f7f7f7; cursor: pointer; }
+      .btn { display: inline-block; padding: 10px 12px; border-radius: 10px; border: 1px solid #bbb; background: #f7f7f7; cursor: pointer; text-decoration: none; }
+      .btn.primary { background: #111; border-color: #111; color: #fff; }
+      .btn.danger { background: #fff; border-color: #d2a0a0; }
+
+      ul { list-style: none; padding: 0; margin: 12px 0 0; }
+      li { padding: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+      .done { text-decoration: line-through; color: #777; }
+      .actions { display: flex; gap: 8px; }
+
+      .hero { border: 1px solid #eee; border-radius: 18px; padding: 22px; background: linear-gradient(180deg, #fafafa, #fff); }
+      .badge { font-size: 12px; padding: 4px 8px; border-radius: 999px; border: 1px solid #e6e6e6; background: #fafafa; }
+      .title { font-weight: 650; }
+      .card-link { text-decoration: none; }
+      .thumb { width: 100%; height: 160px; border-radius: 14px; overflow: hidden; border: 1px solid #eee; background: #fafafa; }
+      .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+      .thumb-empty { height: 100%; display: flex; align-items: center; justify-content: center; }
+
+      .footer { border-top: 1px solid #eee; margin-top: 28px; }
+      .footer-inner { max-width: 980px; margin: 0 auto; padding: 18px 22px; color: #666; font-size: 14px; }
+
+      @media (max-width: 640px) {
+        .nav-inner { flex-wrap: wrap; }
+        .nav-toggle { display: inline-flex; align-items: center; justify-content: center; }
+        .nav-links { display: none; width: 100%; flex-direction: column; align-items: stretch; gap: 10px; padding-top: 10px; }
+        .nav-links.open { display: flex; }
+        .nav-links .link, .nav-links .link-button { padding: 8px 0; }
+        .container { padding: 18px; }
+      }
+    </style>
+  </head>
+  <body hx-boost="true"
+        hx-push-url="true"
+        hx-target="#page"
+        hx-select="#page"
+        hx-swap="outerHTML">
+    <div id="page">
+      <header class="nav">
+        <div class="nav-inner">
+          <a class="brand" href="{% url 'home' %}">RealEstate</a>
+          <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-links">
+            <span class="nav-toggle-lines" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+          <nav class="nav-links" id="nav-links">
+            <a class="link" href="{% url 'home' %}">Home</a>
+            <a class="link" href="{% url 'services' %}">Services</a>
+            <a class="link" href="{% url 'listings' %}">Listings</a>
+            <a class="link" href="{% url 'agents' %}">Agents</a>
+            <a class="link" href="{% url 'contact' %}">Contact</a>
+            {% if user.is_authenticated %}
+              <a class="link" href="{% url 'password_change' %}">Change password</a>
+              <form method="post" action="{% url 'logout' %}" style="display: inline;" hx-boost="false">
+                {% csrf_token %}
+                <button type="submit" class="link link-button">Logout</button>
+              </form>
+            {% else %}
+              <a class="link" href="{% url 'login' %}">Login</a>
+            {% endif %}
+          </nav>
+        </div>
+      </header>
+
+      <main class="container">
+        {% if messages %}
+          <div style="margin-bottom: 14px;">
+            {% for message in messages %}
+              <div class="card" style="margin-bottom: 10px;">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="footer">
+        <div class="footer-inner">
+          © {% now "Y" %} RealEstate. Built for speed.
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

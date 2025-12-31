@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% block title %}Listings{% endblock %}
+
+{% block content %}
+  <div class="row justify-between items-baseline">
+    <div>
+      <h1 class="h1 mb-1.5">Listings</h1>
+      <div class="muted">Create, edit, and delete properties.</div>
+    </div>
+  </div>
+
+  <div class="card mt-4">
+    <h2 class="h2 mt-0">Add property</h2>
+
+    {% if can_create_listing %}
+      <form hx-post="{% url 'property_create' %}"
+            hx-target="#properties"
+            hx-swap="outerHTML"
+            hx-encoding="multipart/form-data"
+            enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="row mb-2.5">
+          <input type="text" name="title" placeholder="Title (required)" autocomplete="off" />
+          <input type="text" name="price" placeholder="Price (e.g. 350000)" autocomplete="off" />
+        </div>
+
+        <div class="row mb-2.5">
+          <input type="text" name="address" placeholder="Address" autocomplete="off" />
+          <select required name="municipality" class="select">
+            <option  value="">Municipality</option>
+            {% for m in municipalities %}
+              <option value="{{ m.id }}">{{ m.name }}</option>
+            {% endfor %}
+          </select>
+          <select name="status" class="select">
+            <option value="for_sale">For sale</option>
+            <option value="for_rent">For rent</option>
+            <option value="for_lease">For lease</option>
+            <option value="sold">Sold</option>
+          </select>
+        </div>
+
+        <div class="mb-2.5">
+          <textarea name="description" placeholder="Description" class="textarea"></textarea>
+        </div>
+
+        <div class="row justify-between">
+          <input type="file" name="images" multiple />
+          <button class="btn primary" type="submit">Add</button>
+        </div>
+      </form>
+    {% else %}
+      <div class="muted">Agent access required to add listings. <a class="link" href="{% url 'login' %}">Login</a></div>
+    {% endif %}
+  </div>
+
+  <div class="card mt-4">
+    <div class="row justify-between items-baseline flex-wrap">
+      <h2 class="h2 mt-0">All listings</h2>
+      <div class="actions flex-wrap">
+        <a href="{% url 'listings' %}"
+           hx-get="{% url 'listings' %}"
+           hx-target="#properties"
+            hx-swap="outerHTML"
+            hx-push-url="true">
+          <button type="button">All</button>
+        </a>
+        {% for m in municipalities %}
+          <a href="{% url 'listings' %}?municipality={{ m.id }}"
+             hx-get="{% url 'listings' %}?municipality={{ m.id }}"
+             hx-target="#properties"
+             hx-swap="outerHTML"
+             hx-push-url="true">
+            <button type="button">{{ m.name }}</button>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+    {% include "core/_properties_list.html" %}
+  </div>
+{% endblock %}

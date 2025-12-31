@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Agents{% endblock %}
+
+{% block content %}
+  <div class="row justify-between items-baseline">
+    <div>
+      <h1 class="h1 mb-1.5">Agents</h1>
+      <div class="muted">Meet our team.</div>
+    </div>
+
+    {% if my_agent %}
+      <div>
+        <a class="btn" href="{% url 'agent_edit' my_agent.id %}">Edit my profile</a>
+      </div>
+    {% endif %}
+  </div>
+
+  {% if user.is_superuser %}
+    <div class="card mt-4">
+      <h2 class="h2 mt-0">Add agent</h2>
+
+      <form hx-post="{% url 'agent_create' %}"
+            hx-target="this"
+            hx-swap="none"
+            hx-encoding="multipart/form-data"
+            enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="row mb-2.5">
+          <input type="text" name="name" placeholder="Name (required)" autocomplete="off" />
+          <input type="text" name="title" placeholder="Title" autocomplete="off" />
+        </div>
+
+        <div class="row mb-2.5">
+          <input type="email" name="email" placeholder="Email" autocomplete="off" />
+          <input type="text" name="phone" placeholder="Phone" autocomplete="off" />
+        </div>
+
+        <div class="mb-2.5">
+          <textarea name="bio" placeholder="Bio" class="textarea"></textarea>
+        </div>
+
+        <div class="row justify-between">
+          <div class="row gap-3">
+            <input type="file" name="photo" accept="image/*" />
+            <label class="muted flex gap-2 items-center">
+              <input type="checkbox" name="active" checked /> Active
+            </label>
+          </div>
+          <button class="btn primary" type="submit">Add</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  <div class="card mt-4">
+    <h2 class="h2 mt-0">All agents</h2>
+    {% include "core/_agents_list.html" %}
+  </div>
+{% endblock %}

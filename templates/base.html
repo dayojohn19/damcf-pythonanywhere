@@ -3,7 +3,9 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Reactive Notes{% endblock %}</title>
+    <title>{% block title %}Real Estate{% endblock %}</title>
+
+    {% load static %}
 
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <meta name="csrf-token" content="{{ csrf_token }}" />
@@ -14,23 +16,93 @@
       });
     </script>
 
-    <style>
-      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin: 0; }
-      .container { max-width: 800px; margin: 0 auto; padding: 24px; }
-      .card { border: 1px solid #ddd; border-radius: 10px; padding: 16px; }
-      .row { display: flex; gap: 8px; align-items: center; }
-      input[type=text] { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc; }
-      button { padding: 10px 12px; border-radius: 8px; border: 1px solid #bbb; background: #f7f7f7; cursor: pointer; }
-      ul { list-style: none; padding: 0; margin: 12px 0 0; }
-      li { padding: 10px; border-bottom: 1px solid #eee; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-      .muted { color: #666; font-size: 14px; }
-      .done { text-decoration: line-through; color: #777; }
-      .actions { display: flex; gap: 8px; }
-    </style>
+    <script>
+      // Mobile nav toggle (works with HTMX swaps via event delegation)
+      document.addEventListener("click", (event) => {
+        const btn = event.target.closest?.("[data-nav-toggle]");
+        if (!btn) return;
+        const nav = document.getElementById("nav-links");
+        if (!nav) return;
+
+        const willOpen = !nav.classList.contains("open");
+        nav.classList.toggle("open", willOpen);
+        btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+      });
+
+      // Close menu after navigation and after HTMX swaps
+      document.addEventListener("click", (event) => {
+        const link = event.target.closest?.("#nav-links a");
+        if (!link) return;
+        const nav = document.getElementById("nav-links");
+        const btn = document.querySelector("[data-nav-toggle]");
+        if (nav) nav.classList.remove("open");
+        if (btn) btn.setAttribute("aria-expanded", "false");
+      });
+
+      document.addEventListener("htmx:afterSwap", () => {
+        const nav = document.getElementById("nav-links");
+        const btn = document.querySelector("[data-nav-toggle]");
+        if (nav) nav.classList.remove("open");
+        if (btn) btn.setAttribute("aria-expanded", "false");
+      });
+    </script>
+
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}" />
   </head>
-  <body>
-    <div class="container">
-      {% block content %}{% endblock %}
+  <body hx-boost="true"
+        hx-push-url="true"
+        hx-target="#page"
+        hx-select="#page"
+        hx-swap="outerHTML">
+    <div id="page">
+      <header class="nav">
+        <div class="nav-inner">
+          <a class="brand" href="{% url 'home' %}">RealEstate</a>
+          <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-links">
+            <span class="nav-toggle-lines" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </span>
+          </button>
+          <nav class="nav-links w-full max-w-xs mx-auto p-4 bg-white shadow-lg rounded-lg md:max-w-none md:w-auto md:p-0 md:bg-transparent md:shadow-none md:rounded-none" id="nav-links">
+            <a class="link" href="{% url 'home' %}">Home</a>
+            <a class="link" href="{% url 'services' %}">Services</a>
+            <a class="link" href="{% url 'listings' %}">Listings</a>
+            <a class="link" href="{% url 'agents' %}">Agents</a>
+            <a class="link" href="{% url 'contact' %}">Contact</a>
+            {% if user.is_authenticated %}
+              <a class="link" href="{% url 'password_change' %}">Change password</a>
+              <form method="post" action="{% url 'logout' %}" class="inline" hx-boost="false">
+                {% csrf_token %}
+                <button type="submit" class="link link-button">Logout</button>
+              </form>
+            {% else %}
+              <a class="link" href="{% url 'login' %}">Login</a>
+            {% endif %}
+          </nav>
+        </div>
+      </header>
+
+      <main class="container">
+        {% if messages %}
+          <div class="mb-3.5">
+            {% for message in messages %}
+              <div class="card mb-2.5">
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="footer">
+        <div class="footer-inner">
+          © {% now "Y" %} RealEstate. Built for speed.
+        </div>
+      </footer>
     </div>
   </body>
 </html>

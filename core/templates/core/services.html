@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Services{% endblock %}
+
+{% block content %}
+  <div>
+    <h1 class="h1 mb-1.5">Services</h1>
+    <div class="muted">What we can help you with.</div>
+  </div>
+
+  {% if user.is_superuser %}
+    <div class="card mt-4">
+      <h2 class="h2 mt-0">Add service</h2>
+
+      <form hx-post="{% url 'service_create' %}"
+            hx-target="#services-grid"
+            hx-swap="outerHTML">
+        {% csrf_token %}
+        <div class="row mb-2.5">
+          <input type="text" name="name" placeholder="Name (required)" autocomplete="off" />
+          <label class="muted flex gap-2 items-center">
+            <input type="checkbox" name="active" checked /> Active
+          </label>
+        </div>
+        <div class="mb-2.5">
+          <textarea name="description" class="textarea" placeholder="Description (optional)"></textarea>
+        </div>
+        <button class="btn primary" type="submit">Add</button>
+      </form>
+    </div>
+  {% endif %}
+
+  <div class="mt-4">
+    {% include "core/_services_grid.html" %}
+  </div>
+
+  <div class="card mt-4">
+    <div class="title">Need help?</div>
+    <div class="muted mt-2">
+      Send us a message on the Contact page and we’ll get back to you.
+    </div>
+    <div class="row mt-3">
+      <a class="btn primary" href="{% url 'contact' %}">Contact</a>
+    </div>
+  </div>
+{% endblock %}

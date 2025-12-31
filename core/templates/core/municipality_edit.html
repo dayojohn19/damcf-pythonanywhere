@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Municipality{% endblock %}
+
+{% block content %}
+  <h1 class="h1">Edit Municipality</h1>
+  <p class="muted"><a class="link" href="{% url 'municipalities' %}">← Back to municipalities</a></p>
+
+  <div class="card mt-4 max-w-[760px]">
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="row mb-2.5">
+        <input type="text" name="name" value="{{ municipality.name }}" placeholder="Name" autocomplete="off" />
+      </div>
+
+      <button class="btn primary" type="submit">Save</button>
+    </form>
+  </div>
+{% endblock %}

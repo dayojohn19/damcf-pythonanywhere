@@ -1,0 +1,17 @@
+<li id="municipality-{{ municipality.id }}">
+  <div>
+    <div class="title">{{ municipality.name }}</div>
+  </div>
+
+  {% if user.is_superuser %}
+    <div class="actions">
+      <a href="{% url 'municipality_edit' municipality.id %}"><button type="button">Edit</button></a>
+      <form hx-post="{% url 'municipality_delete' municipality.id %}"
+            hx-target="#municipalities-list"
+            hx-swap="outerHTML">
+        {% csrf_token %}
+        <button type="submit">Delete</button>
+      </form>
+    </div>
+  {% endif %}
+</li>

@@ -1,0 +1,48 @@
+<li id="agent-{{ agent.id }}">
+  <div class="flex gap-3 items-start">
+    <div class="w-14 shrink-0">
+      {% if agent.photo %}
+        <img src="{{ agent.photo.url }}" alt="{{ agent.name }}" width="56" height="56" loading="lazy" class="w-14 h-14 rounded-full object-cover border border-slate-200" />
+      {% else %}
+        <div class="muted w-14 h-14 rounded-full border border-dashed border-slate-300 flex items-center justify-center">
+          —
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="flex-1 min-w-0">
+      <div class="row justify-between items-baseline">
+        <div>
+          <div class="title">{{ agent.name }}</div>
+          {% if agent.title %}<div class="muted">{{ agent.title }}</div>{% endif %}
+        </div>
+
+        {% if user.is_superuser and not agent.active %}
+          <span class="badge">Inactive</span>
+        {% endif %}
+      </div>
+
+      <div class="muted mt-1.5">
+        {% if agent.email %}{{ agent.email }}{% endif %}
+        {% if agent.email and agent.phone %} • {% endif %}
+        {% if agent.phone %}{{ agent.phone }}{% endif %}
+      </div>
+
+      {% if agent.bio %}
+        <div class="muted mt-1.5">{{ agent.bio|truncatechars:160 }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% if user.is_superuser %}
+    <div class="actions">
+      <a href="{% url 'agent_edit' agent.id %}"><button type="button">Edit</button></a>
+      <form hx-post="{% url 'agent_delete' agent.id %}"
+            hx-target="#agents-list"
+            hx-swap="outerHTML">
+        {% csrf_token %}
+        <button type="submit">Delete</button>
+      </form>
+    </div>
+  {% endif %}
+</li>

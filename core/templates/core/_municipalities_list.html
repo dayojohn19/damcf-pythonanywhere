@@ -1,0 +1,9 @@
+<div id="municipalities-list">
+  <ul>
+    {% for municipality in municipalities %}
+      {% include "core/_municipality_row.html" %}
+    {% empty %}
+      <li><span class="muted">No municipalities yet.</span></li>
+    {% endfor %}
+  </ul>
+</div>

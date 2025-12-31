@@ -1,0 +1,69 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { color-scheme: light; }
+  body { @apply bg-white text-slate-900; }
+  a { @apply text-inherit; }
+}
+
+@layer components {
+  .container { @apply max-w-[980px] mx-auto p-[22px]; }
+
+  .nav { @apply border-b border-slate-200 bg-white sticky top-0 z-10; }
+  .nav-inner { @apply flex items-center justify-between gap-4 max-w-[980px] mx-auto px-[22px] py-[14px] flex-wrap; }
+  .brand { @apply font-bold tracking-tight no-underline; }
+
+  .nav-toggle { @apply hidden items-center justify-center rounded-xl border border-slate-300 bg-slate-100 px-3 py-2; }
+  .nav-toggle-lines { @apply grid gap-1; }
+  .nav-toggle-lines span { @apply block w-[18px] h-[2px] bg-slate-700; }
+
+  .nav-links { @apply flex items-center gap-[14px]; }
+  .nav-links.open { @apply flex; }
+
+  .link { @apply no-underline text-slate-700 hover:underline; }
+  .link-button { @apply bg-transparent border-0 p-0 text-slate-700 cursor-pointer hover:underline; }
+
+  .h1 { @apply text-[34px] leading-[1.1] m-0 font-semibold; }
+  .h2 { @apply text-[18px] m-0 font-semibold; }
+
+  .card { @apply border border-slate-200 rounded-2xl p-4 bg-white; }
+  .row { @apply flex items-center gap-2.5; }
+  /* Tailwind already provides .grid {display:grid}; we add consistent defaults */
+  .grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); @apply gap-3.5; }
+
+  .muted { @apply text-slate-500 text-sm; }
+
+  input[type="text"], input[type="email"] { @apply flex-1 px-3 py-2.5 rounded-xl border border-slate-300; }
+  .select { @apply px-3 py-2.5 rounded-xl border border-slate-300 bg-white; }
+  .textarea { @apply w-full min-h-[90px] px-3 py-2.5 rounded-xl border border-slate-300; }
+
+  button { @apply px-3 py-2.5 rounded-xl border border-slate-300 bg-slate-100 cursor-pointer; }
+  .btn { @apply inline-block px-3 py-2.5 rounded-xl border border-slate-300 bg-slate-100 no-underline; }
+  .btn.primary { @apply bg-slate-900 border-slate-900 text-white; }
+  .btn.danger { @apply bg-white border-rose-200; }
+
+  ul { @apply list-none p-0 m-0; }
+  li { @apply py-2.5 border-b border-slate-200 flex items-center justify-between gap-3; }
+  .actions { @apply flex gap-2; }
+
+  .hero { @apply border border-slate-200 rounded-2xl p-[22px] bg-gradient-to-b from-slate-50 to-white; }
+  .badge { @apply text-xs px-2 py-1 rounded-full border border-slate-200 bg-slate-50; }
+  .title { @apply font-semibold; }
+  .card-link { @apply no-underline; }
+  .thumb { @apply w-full h-40 rounded-2xl overflow-hidden border border-slate-200 bg-slate-50; }
+  .thumb img { @apply w-full h-full object-cover block; }
+  .thumb-empty { @apply h-full flex items-center justify-center; }
+
+  .footer { @apply border-t border-slate-200 mt-7; }
+  .footer-inner { @apply max-w-[980px] mx-auto px-[22px] py-[18px] text-slate-500 text-sm; }
+
+  @media (max-width: 640px) {
+    .container { @apply p-[18px]; }
+    .nav-toggle { @apply inline-flex; }
+    .nav-links { @apply hidden w-full flex-col items-stretch gap-2.5 pt-2.5; }
+    .nav-links.open { @apply flex; }
+    .nav-links .link, .nav-links .link-button { @apply py-2; }
+  }
+}

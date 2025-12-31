@@ -1,0 +1,9 @@
+<div id="agents-list">
+  <ul>
+    {% for agent in agents %}
+      {% include "core/_agent_row.html" %}
+    {% empty %}
+      <li><span class="muted">No agents yet.</span></li>
+    {% endfor %}
+  </ul>
+</div>

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Contact{% endblock %}
+
+{% block content %}
+  <h1 class="h1">Contact</h1>
+  <p class="muted max-w-[60ch]">Send us a message and we’ll get back to you.</p>
+
+  {% if service %}
+    <div class="card mt-3">
+      <strong>Booking:</strong> {{ service }}
+    </div>
+  {% endif %}
+
+  {% if success %}
+    <div class="card border-emerald-200 bg-emerald-50">
+      <strong>Message sent.</strong>
+      <div class="muted mt-1.5">Thanks — we’ll respond soon.</div>
+    </div>
+  {% endif %}
+
+  {% if error %}
+    <div class="card border-rose-200 bg-rose-50">
+      <strong>Couldn’t send.</strong>
+      <div class="muted mt-1.5">{{ error }}</div>
+    </div>
+  {% endif %}
+
+  <div class="card mt-4">
+    <form method="post" action="{% url 'contact' %}{% if service %}?service={{ service|urlencode }}{% endif %}">
+      {% csrf_token %}
+
+      <div class="row mb-2.5">
+        <input type="text" name="name" placeholder="Your name" value="{{ name|default:'' }}" autocomplete="off" />
+        <input type="email" name="email" placeholder="Email" value="{{ email|default:'' }}" autocomplete="off" />
+      </div>
+
+      <div class="mb-2.5">
+        <textarea name="message" placeholder="How can we help?" class="textarea">{{ message|default:'' }}</textarea>
+      </div>
+
+      <button class="btn primary" type="submit">Send</button>
+    </form>
+  </div>
+
+  <p class="muted mt-3.5">Or visit the <a class="link" href="{% url 'listings' %}">Listings</a> page.</p>
+{% endblock %}

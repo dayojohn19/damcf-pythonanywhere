@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+  <h1 class="h1">Login</h1>
+  <p class="muted">Superusers can manage listings after logging in.</p>
+
+  <div class="card mt-4 max-w-[520px]">
+    <form method="post" action="{% url 'login' %}">
+      {% csrf_token %}
+
+      {% if form.errors %}
+        <div class="card border-rose-200 bg-rose-50 mb-3">
+          <strong>Login failed.</strong>
+          <div class="muted mt-1.5">Check your username and password.</div>
+        </div>
+      {% endif %}
+
+      <input type="hidden" name="next" value="{{ next }}" />
+
+      <div class="row mb-2.5">
+        <input type="text" name="username" placeholder="Username" autocomplete="username" />
+      </div>
+
+      <div class="row mb-2.5">
+        <input type="password" name="password" placeholder="Password" autocomplete="current-password" />
+      </div>
+
+      <button class="btn primary" type="submit">Login</button>
+    </form>
+  </div>
+{% endblock %}

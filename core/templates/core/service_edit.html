@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Service{% endblock %}
+
+{% block content %}
+  <h1 class="h1">Edit Service</h1>
+  <p class="muted"><a class="link" href="{% url 'services' %}">← Back to services</a></p>
+
+  <div class="card mt-4 max-w-[760px]">
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="row mb-2.5">
+        <input type="text" name="name" value="{{ service.name }}" placeholder="Name" autocomplete="off" />
+        <label class="muted flex gap-2 items-center">
+          <input type="checkbox" name="active" {% if service.active %}checked{% endif %} /> Active
+        </label>
+      </div>
+
+      <div class="mb-2.5">
+        <textarea name="description" class="textarea" placeholder="Description (optional)">{{ service.description }}</textarea>
+      </div>
+
+      <button class="btn primary" type="submit">Save</button>
+    </form>
+  </div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{
+  "name": "realestatewebdjango",
+  "private": true,
+  "devDependencies": {
+    "tailwindcss": "^3.4.17"
+  },
+  "scripts": {
+    "build:css": "tailwindcss -c tailwind.config.js -i ./static/src/tailwind.css -o ./static/css/tailwind.css --minify",
+    "watch:css": "tailwindcss -c tailwind.config.js -i ./static/src/tailwind.css -o ./static/css/tailwind.css --watch"
+  }
+}

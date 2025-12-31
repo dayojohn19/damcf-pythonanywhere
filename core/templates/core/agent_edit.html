@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Agent{% endblock %}
+
+{% block content %}
+  <h1 class="h1">Edit Agent</h1>
+  <p class="muted"><a class="link" href="{% url 'agents' %}">← Back to agents</a></p>
+
+  <div class="card mt-4 max-w-[760px]">
+    <form method="post" enctype="multipart/form-data" hx-boost="false">
+      {% csrf_token %}
+
+      <div class="row mb-2.5">
+        <input type="text" name="name" value="{{ agent.name }}" placeholder="Name" autocomplete="off" />
+        <input type="text" name="title" value="{{ agent.title }}" placeholder="Title" autocomplete="off" />
+      </div>
+
+      <div class="row mb-2.5">
+        {% if user.is_superuser %}
+          <input type="email" name="email" value="{{ agent.email }}" placeholder="Email" autocomplete="off" />
+        {% else %}
+          <div class="muted flex-1 px-3 py-2.5 rounded-xl border border-slate-200">{{ agent.email }}</div>
+        {% endif %}
+        <input type="text" name="phone" value="{{ agent.phone }}" placeholder="Phone" autocomplete="off" />
+      </div>
+
+      <div class="mb-2.5">
+        <textarea name="bio" class="textarea" placeholder="Bio">{{ agent.bio }}</textarea>
+      </div>
+
+      <div class="row justify-between">
+        <div class="row gap-3">
+          <input type="file" name="photo" accept="image/*" />
+          {% if user.is_superuser %}
+            <label class="muted flex gap-2 items-center">
+              <input type="checkbox" name="active" {% if agent.active %}checked{% endif %} /> Active
+            </label>
+          {% endif %}
+        </div>
+        <button class="btn primary" type="submit">Save</button>
+      </div>
+
+      {% if agent.photo %}
+        <div class="muted mt-3">Current photo:</div>
+        <img src="{{ agent.photo.url }}" alt="{{ agent.name }}" loading="lazy" class="mt-2 w-[120px] h-[120px] object-cover rounded-full border border-slate-200" />
+      {% endif %}
+    </form>
+  </div>
+{% endblock %}

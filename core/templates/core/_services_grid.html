@@ -1,0 +1,30 @@
+<div id="services-grid" class="grid">
+  {% for service in services %}
+    <div class="card">
+      <div class="title">{{ service.name }}</div>
+      {% if service.description %}
+        <div class="muted mt-2">{{ service.description }}</div>
+      {% endif %}
+
+      <div class="row mt-3 justify-between">
+        <a class="btn" href="{% url 'contact' %}?service={{ service.name|urlencode }}">Book</a>
+
+        {% if user.is_superuser %}
+          <div class="actions">
+            <a href="{% url 'service_edit' service.id %}"><button type="button">Edit</button></a>
+            <form hx-post="{% url 'service_delete' service.id %}"
+                  hx-target="#services-grid"
+                  hx-swap="outerHTML">
+              {% csrf_token %}
+              <button type="submit">Delete</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% empty %}
+    <div class="card">
+      <div class="muted">No services yet.</div>
+    </div>
+  {% endfor %}
+</div>

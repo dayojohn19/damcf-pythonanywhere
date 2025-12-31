@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Note, Property, PropertyImage
+from .models import Agent, ContactMessage, Municipality, Note, Property, PropertyImage, Service
 
 
 @admin.register(Note)
@@ -12,8 +12,8 @@ class NoteAdmin(admin.ModelAdmin):
 
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
-    list_display = ("title", "status", "price", "created_at")
-    list_filter = ("status",)
+    list_display = ("title", "municipality", "status", "price", "created_at")
+    list_filter = ("status", "municipality")
     search_fields = ("title", "address", "description")
 
 
@@ -23,3 +23,32 @@ class PropertyImageInline(admin.TabularInline):
 
 
 PropertyAdmin.inlines = [PropertyImageInline]
+
+
+@admin.register(ContactMessage)
+class ContactMessageAdmin(admin.ModelAdmin):
+    list_display = ("name", "email", "created_at")
+    search_fields = ("name", "email", "message")
+    ordering = ("-created_at",)
+
+
+@admin.register(Agent)
+class AgentAdmin(admin.ModelAdmin):
+    list_display = ("name", "title", "email", "phone", "active", "user")
+    list_filter = ("active",)
+    search_fields = ("name", "title", "email", "phone", "bio")
+    filter_horizontal = ("properties",)
+
+
+@admin.register(Municipality)
+class MunicipalityAdmin(admin.ModelAdmin):
+    list_display = ("name", "description")
+    search_fields = ("name", "description")
+    filter_horizontal = ("properties",)
+
+
+@admin.register(Service)
+class ServiceAdmin(admin.ModelAdmin):
+    list_display = ("name", "active", "updated_at")
+    list_filter = ("active",)
+    search_fields = ("name", "description")

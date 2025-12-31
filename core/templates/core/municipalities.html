@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Municipalities{% endblock %}
+
+{% block content %}
+  <div class="row justify-between items-baseline">
+    <div>
+      <h1 class="h1 mb-1.5">Municipalities</h1>
+      <div class="muted">Manage municipalities for property listings.</div>
+    </div>
+  </div>
+
+  {% if user.is_superuser %}
+    <div class="card mt-4">
+      <h2 class="h2 mt-0">Add municipality</h2>
+
+      <form hx-post="{% url 'municipality_create' %}"
+            hx-target="#municipalities-list"
+            hx-swap="outerHTML">
+        {% csrf_token %}
+        <div class="row mb-2.5">
+          <input type="text" name="name" placeholder="Name (required)" autocomplete="off" />
+        </div>
+        <div class="mb-2.5">
+          <textarea name="description" class="textarea" placeholder="Description (optional)"></textarea>
+        </div>
+        <div class="row justify-end">
+          <button class="btn primary" type="submit">Add</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
+
+  <div class="card mt-4">
+    <h2 class="h2 mt-0">All municipalities</h2>
+    {% include "core/_municipalities_list.html" %}
+  </div>
+{% endblock %}
