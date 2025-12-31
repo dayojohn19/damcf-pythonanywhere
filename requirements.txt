@@ -7,4 +7,4 @@ Pillow>=10.0
 
 # Cloudinary storage for media uploads
 cloudinary>=1.32.0
-django-cloudinary-storage>=0.4.0
+django-cloudinary-storage==0.3.0
