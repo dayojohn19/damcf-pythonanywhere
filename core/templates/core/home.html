@@ -25,8 +25,8 @@
     <div class="grid mt-3.5">
       {% for prop in featured %}
         <a class="card card-link" href="{% url 'property_detail' prop.id %}">
-          <div class="thumb">
-            {% for img in prop.images.all|slice:":1" %}
+              <div class="thumb">
+              {% for img in prop.images.all|slice:":1" %}
               <img src="{{ img.image.url }}" alt="{{ prop.title }}" loading="lazy" />
             {% empty %}
               <div class="thumb-empty muted">No photo</div>

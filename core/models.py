@@ -1,6 +1,16 @@
 from django.conf import settings
 from django.db import models
 
+try:
+    import cloudinary.uploader as _cloudinary_uploader
+    _HAS_CLOUDINARY = True
+except Exception:
+    _cloudinary_uploader = None
+    _HAS_CLOUDINARY = False
+
+import os
+from pathlib import Path
+
 
 class Note(models.Model):
     text = models.CharField(max_length=200)
@@ -90,6 +100,38 @@ class PropertyImage(models.Model):
     def __str__(self) -> str:
         return f"Image for {self.property_id}"
 
+    def save(self, *args, **kwargs):
+        # If cloudinary is available and the field contains a local file, upload it
+        uploaded_to_cloud = False
+        try:
+            name = str(self.image or "")
+            if _HAS_CLOUDINARY and name and not name.startswith("http"):
+                file_obj = getattr(self.image, "file", None)
+                if file_obj is not None:
+                    try:
+                        result = _cloudinary_uploader.upload(file_obj, folder="realestate/properties")
+                        secure = result.get("secure_url") or result.get("url")
+                        if secure:
+                            # store the remote URL in the ImageField
+                            self.image = secure
+                            uploaded_to_cloud = True
+                    except Exception:
+                        uploaded_to_cloud = False
+        except Exception:
+            uploaded_to_cloud = False
+
+        super().save(*args, **kwargs)
+
+        # If we uploaded and a local file exists, try to remove it to save space
+        if uploaded_to_cloud:
+            try:
+                # original name may refer to a MEDIA_ROOT path
+                orig_path = Path(settings.MEDIA_ROOT) / name
+                if orig_path.exists():
+                    orig_path.unlink()
+            except Exception:
+                pass
+
 
 class ContactMessage(models.Model):
     name = models.CharField(max_length=120)
@@ -128,3 +170,32 @@ class Agent(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def save(self, *args, **kwargs):
+        # Upload photo to Cloudinary and store URL if available
+        uploaded_to_cloud = False
+        try:
+            name = str(self.photo or "")
+            if _HAS_CLOUDINARY and name and not name.startswith("http"):
+                file_obj = getattr(self.photo, "file", None)
+                if file_obj is not None:
+                    try:
+                        result = _cloudinary_uploader.upload(file_obj, folder="realestate/agents")
+                        secure = result.get("secure_url") or result.get("url")
+                        if secure:
+                            self.photo = secure
+                            uploaded_to_cloud = True
+                    except Exception:
+                        uploaded_to_cloud = False
+        except Exception:
+            uploaded_to_cloud = False
+
+        super().save(*args, **kwargs)
+
+        if uploaded_to_cloud:
+            try:
+                orig_path = Path(settings.MEDIA_ROOT) / name
+                if orig_path.exists():
+                    orig_path.unlink()
+            except Exception:
+                pass
