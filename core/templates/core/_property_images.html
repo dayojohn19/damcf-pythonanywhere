@@ -4,7 +4,7 @@
   <div class="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))]">
     {% for img in property.images.all %}
       <div class="card p-2.5">
-        <img src="{{ img.image.url }}" alt="Photo" loading="lazy" class="w-full h-[120px] object-cover rounded-lg border border-slate-200" />
+        <img src="{{ img.image }}" alt="Photo" loading="lazy" class="w-full h-[120px] object-cover rounded-lg border border-slate-200" />
         <form class="mt-2.5"
               hx-post="{% url 'property_image_delete' img.id %}"
               hx-target="#property-images"

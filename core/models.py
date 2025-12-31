@@ -91,7 +91,7 @@ class Property(models.Model):
 
 class PropertyImage(models.Model):
     property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="images")
-    image = models.ImageField(upload_to="properties/%Y/%m/%d/")
+    image = models.URLField(max_length=2000)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -158,7 +158,7 @@ class Agent(models.Model):
     title = models.CharField(max_length=120, blank=True)
     email = models.EmailField(blank=True)
     phone = models.CharField(max_length=50, blank=True)
-    photo = models.ImageField(upload_to="agents/%Y/%m/%d/", blank=True, null=True)
+    photo = models.URLField(max_length=2000, blank=True, null=True)
     bio = models.TextField(blank=True)
     active = models.BooleanField(default=True)
     properties = models.ManyToManyField(Property, blank=True, related_name="agents")

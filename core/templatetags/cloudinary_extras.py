@@ -3,7 +3,7 @@ from django.core.files.storage import default_storage
 
 register = template.Library()
 
-try:
+try: 
     from cloudinary.utils import cloudinary_url
     _has_cloudinary = True
 except Exception:

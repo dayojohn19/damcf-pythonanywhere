@@ -15,6 +15,56 @@ from django.contrib import messages
 from django.urls import reverse
 
 from .models import Agent, ContactMessage, Municipality, Note, Property, PropertyImage, Service
+from pathlib import Path
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+
+try:
+    import cloudinary.uploader as _cloudinary_uploader
+    # Only enable Cloudinary usage when credentials are configured in settings
+    creds = getattr(settings, "CLOUDINARY_STORAGE", {}) or {}
+    _HAS_CLOUDINARY = bool(creds.get("API_KEY") and creds.get("API_SECRET") and creds.get("CLOUD_NAME"))
+except Exception:
+    _cloudinary_uploader = None
+    _HAS_CLOUDINARY = False
+
+
+def _upload_file_and_get_url(file_obj, folder: str) -> str | None:
+    """Try to upload `file_obj` to Cloudinary and return URL, else save to MEDIA and return URL."""
+    if file_obj is None:
+        return None
+    # Try Cloudinary first
+    if _HAS_CLOUDINARY and _cloudinary_uploader is not None:
+        try:
+            result = _cloudinary_uploader.upload(file_obj, folder=f"realestate/{folder}")
+            secure = result.get("secure_url") or result.get("url")
+            if secure:
+                return secure
+        except Exception as e:
+            print('Cant Save in Cloudinary')
+            print(e)
+            pass
+    # try:
+
+    #     # Fallback: use Django `default_storage` so this works with local MEDIA_ROOT
+    #     # or remote storage backends (S3, etc.). Return the public URL if available.
+    #     try:
+    #         name = secrets.token_urlsafe(8) + "-" + getattr(file_obj, "name", "upload")
+    #         storage_path = f"{folder}/{name}"
+    #         # read file content (works for InMemoryUploadedFile and TemporaryUploadedFile)
+    #         content = ContentFile(file_obj.read())
+    #         saved_path = default_storage.save(storage_path, content)
+    #         try:
+    #             return default_storage.url(saved_path)
+    #         except Exception:
+    #             # If storage doesn't provide a URL, try MEDIA_URL fallback
+    #             media_url = (settings.MEDIA_URL or "/media").rstrip("/")
+    #             return f"{media_url}/{saved_path.lstrip('/')}"
+    #     except Exception:
+    #         # final fallback: give up and return None
+    #         return None
+    # except Exception:
+    #     return None
 
 
 def _is_superuser(user) -> bool:
@@ -293,6 +343,12 @@ def agent_create(request: HttpRequest) -> HttpResponse:
         else:
             messages.warning(request, "Agent created without email; no login account was created.")
 
+
+        photo_url = None
+        photo_file = request.FILES.get("photo")
+        if photo_file is not None:
+            photo_url = _upload_file_and_get_url(photo_file, "agents")
+
         Agent.objects.create(
             user=user,
             name=name,
@@ -301,7 +357,7 @@ def agent_create(request: HttpRequest) -> HttpResponse:
             phone=phone,
             bio=bio,
             active=active,
-            photo=request.FILES.get("photo") or None,
+            photo=photo_url,
         )
 
     if request.headers.get("HX-Request") == "true":
@@ -313,8 +369,10 @@ def agent_create(request: HttpRequest) -> HttpResponse:
 
 def agent_edit(request: HttpRequest, pk: int) -> HttpResponse:
     agent = get_object_or_404(Agent, pk=pk)
+    print('Agent')
 
     is_superuser = request.user.is_authenticated and request.user.is_superuser
+    print('is SuperUser')
     is_self = request.user.is_authenticated and agent.user_id == request.user.id
     if not (is_superuser or is_self):
         return redirect("agents")
@@ -338,7 +396,10 @@ def agent_edit(request: HttpRequest, pk: int) -> HttpResponse:
             new_email = agent.email
 
         if request.FILES.get("photo"):
-            agent.photo = request.FILES.get("photo")
+            photo_file = request.FILES.get("photo")
+            photo_url = _upload_file_and_get_url(photo_file, "agents")
+            if photo_url:
+                agent.photo = photo_url
 
         if is_superuser and new_email:
             User = get_user_model()
@@ -422,7 +483,9 @@ def property_create(request: HttpRequest) -> HttpResponse:
                 agent_profile.properties.add(prop)
 
         for uploaded in request.FILES.getlist("images"):
-            PropertyImage.objects.create(property=prop, image=uploaded)
+            url = _upload_file_and_get_url(uploaded, "properties")
+            if url:
+                PropertyImage.objects.create(property=prop, image=url)
 
     if request.headers.get("HX-Request") == "true":
         return _properties_list_partial(request)
@@ -484,7 +547,9 @@ def property_edit(request: HttpRequest, pk: int) -> HttpResponse:
         prop.save()
 
         for uploaded in request.FILES.getlist("images"):
-            PropertyImage.objects.create(property=prop, image=uploaded)
+            url = _upload_file_and_get_url(uploaded, "properties")
+            if url:
+                PropertyImage.objects.create(property=prop, image=url)
 
         if request.headers.get("HX-Request") == "true":
             prop.refresh_from_db()

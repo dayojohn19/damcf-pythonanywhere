@@ -32,7 +32,7 @@
     <div class="grid mt-4">
     {% for img in property.images.all %}
       <div class="card p-2.5">
-        <img src="{{ img.image.url }}" alt="Photo" loading="lazy" class="w-full h-[220px] object-cover rounded-xl border border-slate-200" />
+        <img src="{{ img.image }}" alt="Photo" loading="lazy" class="w-full h-[220px] object-cover rounded-xl border border-slate-200" />
       </div>
     {% empty %}
       <div class="card">
@@ -55,7 +55,7 @@
       {% if agent %}
         <div class="flex gap-4 items-start mt-4 mb-2">
           {% if agent.photo %}
-            <img src="{{ agent.photo.url }}" alt="{{ agent.name }}" class="w-20 h-20 object-cover rounded-full border border-slate-200" />
+            <img src="{{ agent.photo }}" alt="{{ agent.name }}" class="w-20 h-20 object-cover rounded-full border border-slate-200" />
           {% endif %}
           <div>
             <div class="font-semibold text-lg">{{ agent.name }}</div>
@@ -73,7 +73,7 @@
                 <a class="card card-link" href="{% url 'property_detail' p.id %}">
                   <div class="thumb">
                     {% for img in p.images.all|slice:':1' %}
-                      <img src="{{ img.image.url }}" alt="{{ p.title }}" loading="lazy" />
+                      <img src="{{ img.image }}" alt="{{ p.title }}" loading="lazy" />
                     {% empty %}
                       <div class="thumb-empty muted">No photo</div>
                     {% endfor %}

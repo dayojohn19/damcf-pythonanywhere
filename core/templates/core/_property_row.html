@@ -2,7 +2,7 @@
   <div class="flex gap-3 items-start">
     <div class="w-[90px] shrink-0">
       {% for img in prop.images.all|slice:":1" %}
-        <img src="{{ img.image.url }}" alt="{{ prop.title }}" width="90" height="68" loading="lazy" class="w-[90px] h-[68px] object-cover rounded-lg border border-slate-200" />
+        <img src="{{ img.image }}" alt="{{ prop.title }}" width="90" height="68" loading="lazy" class="w-[90px] h-[68px] object-cover rounded-lg border border-slate-200" />
       {% empty %}
         <div class="muted h-[68px] rounded-lg border border-dashed border-slate-300 flex items-center justify-center">
           No photo
