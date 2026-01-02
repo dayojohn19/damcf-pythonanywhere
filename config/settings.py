@@ -35,8 +35,16 @@ ALLOWED_HOSTS = ["*"] if DEBUG else [h for h in os.environ.get("ALLOWED_HOSTS", 
 if not ALLOWED_HOSTS and not DEBUG:
     # Heroku sets `HEROKU_APP_NAME` sometimes; fallback to allow all if user forgot.
     ALLOWED_HOSTS = ["*"]
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
 
-CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o]
+CSRF_TRUSTED_ORIGINS = [
+    "https://damcfrealty-and-businessconsultancy.com",
+    "http://damcfrealty-and-businessconsultancy.com",
+    "https://www.damcfrealty-and-businessconsultancy.com",
+    "http://www.damcfrealty-and-businessconsultancy.com",
+]
+# CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -154,7 +162,7 @@ LOGOUT_REDIRECT_URL = "home"
 # If unset/empty, a random temporary password is generated and shown to the superuser.
 AGENT_DEFAULT_PASSWORD = os.environ.get("AGENT_DEFAULT_PASSWORD", "")
 
-SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = _env_bool(os.environ.get("SECURE_SSL_REDIRECT"), default=not DEBUG)
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
