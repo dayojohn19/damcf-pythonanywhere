@@ -27,7 +27,8 @@ else:
 # Allow override via environment (recommended for production).
 SECRET_KEY = os.environ.get("SECRET_KEY") or _file_secret_key
 
-DEBUG = _env_bool(os.environ.get("DEBUG"), default=True)
+# Default to DEBUG=False on Heroku (DYNO env var is set).
+DEBUG = _env_bool(os.environ.get("DEBUG"), default=not bool(os.environ.get("DYNO")))
 
 ALLOWED_HOSTS = ["*"] if DEBUG else [h for h in os.environ.get("ALLOWED_HOSTS", "").split(",") if h]
 if not ALLOWED_HOSTS and not DEBUG:

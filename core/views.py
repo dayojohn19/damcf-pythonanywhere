@@ -37,6 +37,11 @@ def _upload_file_and_get_url(file_obj, folder: str) -> str | None:
     """Try to upload `file_obj` to Cloudinary and return URL, else save to MEDIA and return URL."""
     if file_obj is None:
         return None
+
+    # In production, require Cloudinary to avoid ephemeral local media on Heroku.
+    if not getattr(settings, "DEBUG", True) and not _HAS_CLOUDINARY:
+        return None
+
     # Try Cloudinary first
     if _HAS_CLOUDINARY and _cloudinary_uploader is not None:
         try:
