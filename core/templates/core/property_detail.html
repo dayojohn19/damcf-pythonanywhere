@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load cloudinary_extras %}
+{% load cloudinary_extras humanize %}
 
 {% block title %}{{ property.title }}{% endblock %}
 
@@ -12,7 +12,7 @@
       <h1 class="h1 mb-1.5">{{ property.title }}</h1>
       <div class="row gap-2.5 flex-wrap">
         <span class="badge">{{ property.get_status_display }}</span>
-        {% if property.price %}<span class="muted">${{ property.price }}</span>{% endif %}
+        {% if property.price %}<span class="muted">₱{{ property.price|intcomma }}</span>{% endif %}
         {% if property.municipality %}<span class="muted">• {{ property.municipality.name }}</span>{% endif %}
         {% if property.address %}
           <span class="muted">•
@@ -106,7 +106,7 @@
                   </div>
                   <div class="mt-2.5">
                     <div class="title">{{ p.title }}</div>
-                    {% if p.price %}<div class="muted mt-1.5">${{ p.price }}</div>{% endif %}
+                    {% if p.price %}<div class="muted mt-1.5">₱{{ p.price|intcomma }}</div>{% endif %}
                     {% if p.municipality %}<div class="muted mt-1.5">{{ p.municipality.name }}</div>{% endif %}
                   </div>
                 </a>

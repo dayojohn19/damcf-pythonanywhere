@@ -16,7 +16,7 @@
       <div class="flex flex-wrap items-baseline gap-2">
         <strong>{{ prop.title }}</strong>
         <span class="muted">({{ prop.get_status_display }})</span>
-        {% if prop.price %}<span class="muted">• ${{ prop.price }}</span>{% endif %}
+        {% if prop.price %}<span class="muted">• ₱{{ prop.price|intcomma }}</span>{% endif %}
         {% if prop.municipality %}<span class="muted">• {{ prop.municipality.name }}</span>{% endif %}
         <span class="muted">• {{ prop.images.all|length }} photos</span>
       </div>
