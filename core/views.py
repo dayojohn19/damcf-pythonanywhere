@@ -1,4 +1,5 @@
 from decimal import Decimal, InvalidOperation
+import os
 import secrets
 
 from django.http import HttpRequest, HttpResponse
@@ -39,7 +40,7 @@ def _upload_file_and_get_url(file_obj, folder: str) -> str | None:
         return None
 
     # In production, require Cloudinary to avoid ephemeral local media on Heroku.
-    if not getattr(settings, "DEBUG", True) and not _HAS_CLOUDINARY:
+    if (os.environ.get("DYNO") or not getattr(settings, "DEBUG", True)) and not _HAS_CLOUDINARY:
         return None
 
     # Try Cloudinary first
@@ -549,6 +550,8 @@ def agent_create(request: HttpRequest) -> HttpResponse:
         photo_file = request.FILES.get("photo")
         if photo_file is not None:
             photo_url = _upload_file_and_get_url(photo_file, "agents")
+            if not photo_url:
+                messages.error(request, "Agent photo could not be uploaded (Cloudinary not configured or upload failed).")
 
         Agent.objects.create(
             user=user,
@@ -601,6 +604,8 @@ def agent_edit(request: HttpRequest, pk: int) -> HttpResponse:
             photo_url = _upload_file_and_get_url(photo_file, "agents")
             if photo_url:
                 agent.photo = photo_url
+            else:
+                messages.error(request, "Agent photo could not be uploaded (Cloudinary not configured or upload failed).")
 
         if is_superuser and new_email:
             User = get_user_model()
