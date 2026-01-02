@@ -42,8 +42,8 @@
     </div>
 
     <div class="actions mt-2">
-      <button class="btn" type="submit">Send request</button>
-      <button class="btn" type="submit" name="send_whatsapp" value="1">Send via WhatsApp</button>
+      <!-- <button class="btn" type="submit">Send request</button> -->
+      <!-- <button class="btn" type="submit" name="send_whatsapp" value="1">Send via WhatsApp</button> -->
       <a class="btn" hx-boost="false"
          href="{% url 'contact' %}?service={{ property.title|urlencode }}&property={{ property.id }}"
          onclick="return (function(a){
