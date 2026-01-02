@@ -3,12 +3,74 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}Real Estate{% endblock %}</title>
+    <title>{% block title %}DAMCA Consultancy and Real Estate Services{% endblock %}</title>
+
+    <meta name="description" content="DAMCA Consultancy and Real Estate Services in Siargao. Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services." />
+    <meta name="robots" content="index, follow" />
+
+    <meta property="og:site_name" content="DAMCA Consultancy and Real Estate Services" />
+    <meta property="og:title" content="DAMCA Consultancy and Real Estate Services" />
+    <meta property="og:description" content="Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s" />
+
+    <link rel="icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s" />
+    <link rel="apple-touch-icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="DAMCA Consultancy and Real Estate Services" />
+    <meta name="twitter:description" content="Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services." />
+    <meta name="twitter:image" content="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "DAMCA Consultancy and Real Estate Services",
+        "description": "Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services.",
+        "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s",
+        "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s",
+        "telephone": "+639980993376",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "Purok 3",
+          "addressLocality": "General Luna",
+          "addressRegion": "Surigao del Norte",
+          "addressCountry": "PH"
+        }
+      }
+    </script>
 
     {% load static %}
 
     <script src="https://unpkg.com/htmx.org@1.9.12"></script>
     <meta name="csrf-token" content="{{ csrf_token }}" />
+
+    <style>
+      .img-watermark-wrap {
+        position: relative;
+        display: inline-block;
+      }
+      .img-watermark-wrap.fill {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+      .img-watermark-wrap > img {
+        display: block;
+      }
+      .img-watermark-wrap::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image: var(--wm-logo);
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 40% auto;
+        opacity: 0.5;
+        pointer-events: none;
+      }
+    </style>
     <script>
       document.addEventListener("htmx:configRequest", (event) => {
         const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content");
@@ -45,6 +107,49 @@
         if (nav) nav.classList.remove("open");
         if (btn) btn.setAttribute("aria-expanded", "false");
       });
+    </script>
+
+    <script>
+      (function () {
+        const WATERMARK_LOGO_URL = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s";
+
+        function watermarkImages(root) {
+          const scope = root || document;
+          const imgs = scope.querySelectorAll('img:not([data-watermarked])');
+          imgs.forEach((img) => {
+            if (img.hasAttribute('data-no-watermark')) return;
+            if (!img.parentNode) return;
+
+            const wrap = document.createElement('span');
+            wrap.className = 'img-watermark-wrap';
+            wrap.style.setProperty('--wm-logo', `url("${WATERMARK_LOGO_URL}")`);
+
+            const parent = img.parentElement;
+            if (parent && parent.classList.contains('thumb')) {
+              wrap.classList.add('fill');
+            }
+
+            try {
+              const br = window.getComputedStyle(img).borderRadius;
+              if (br && br !== '0px') {
+                wrap.style.borderRadius = br;
+                wrap.style.overflow = 'hidden';
+              }
+            } catch (_) {
+              // ignore
+            }
+
+            img.setAttribute('data-watermarked', '1');
+            img.parentNode.insertBefore(wrap, img);
+            wrap.appendChild(img);
+          });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => watermarkImages(document));
+        document.addEventListener('htmx:afterSwap', (event) => {
+          watermarkImages(event && event.target ? event.target : document);
+        });
+      })();
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
@@ -300,8 +405,12 @@
     <div id="page">
       
       <header class="nav">
-        <div class="nav-inner">
-          <a class="brand" href="{% url 'home' %}">RealEstate</a>
+        <div 
+        style="position: sticky;top: 0;background-color: white;left: 0; z-index: 2;" class="nav-inner">
+          <a class="brand row items-center gap-2" href="{% url 'home' %}">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s" alt="Isla Linaw Siargao" style="height: 3rem; width: auto;" loading="eager" data-no-watermark />
+            <span>DAMCA Consultancy and Real Estate Services</span>
+          </a>
           <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-links">
             <span class="nav-toggle-lines" aria-hidden="true">
               <span></span>
@@ -326,7 +435,6 @@
             {% endif %}
           </nav>
         </div>
-      </header>
 
       <main class="container">
         {% if messages %}
@@ -344,7 +452,17 @@
 
       <footer class="footer">
         <div class="footer-inner">
-          © {% now "Y" %} RealEstate.
+          <div class="row justify-between items-start flex-wrap gap-3">
+            <div>
+              <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s" alt="Isla Linaw Siargao" style="height: 5rem; width: auto; margin-bottom: 0.5rem;" loading="lazy" />
+              © {% now "Y" %} RealEstate.
+            </div>
+            <div>
+              <div class="muted">Office address: Purok 3, General Luna Siargao, Surigao Del Norte</div>
+              <div class="muted">WhatsApp: +639980993376</div>
+              <div class="muted">Facebook: Isla Linaw Siargao</div>
+            </div>
+          </div>
         </div>
       </footer>
     </div>

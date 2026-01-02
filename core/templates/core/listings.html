@@ -5,13 +5,12 @@
 {% block content %}
   <div class="row justify-between items-baseline">
     <div>
-      <h1 class="h1 mb-1.5">Listings</h1>
-      <div class="muted">Create, edit, and delete properties.</div>
+
     </div>
   </div>
 
   <div class="card mt-4">
-    <h2 class="h2 mt-0">Add property</h2>
+    
 
     {% if can_create_listing %}
       <form hx-post="{% url 'property_create' %}"
@@ -52,7 +51,7 @@
         </div>
       </form>
     {% else %}
-      <div class="muted">Agent access required to add listings. <a class="link" href="{% url 'login' %}">Login</a></div>
+      
     {% endif %}
   </div>
 

@@ -10,15 +10,23 @@
       <h1 class="h1">Find your next Property</h1>
       <p class="muted mt-2.5 max-w-[58ch]">
         Browse listings, view details, and contact us.
+
       </p>
       <div class="row mt-4 gap-2.5">
         <a class="btn primary" href="{% url 'listings' %}">Browse Listings</a>
+        <a class="btn" href="{% url 'services' %}">View Services</a>
         <a class="btn" href="{% url 'contact' %}">Contact</a>
       </div>
     </div>
   </section>
 
   <section class="mt-[22px]">
+    
+    <p class="muted mt-2.5 max-w-[58ch]">
+      
+       We also offer assistance with property and building concerns, business registration and maintenance, and tax filing support.
+    </p>      
+    <br>
     <div class="row justify-between items-baseline">
       <h2 class="h2 m-0">Featured</h2>
       <a class="link" href="{% url 'listings' %}">View all →</a>
