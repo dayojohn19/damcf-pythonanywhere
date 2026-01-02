@@ -1,5 +1,6 @@
 from pathlib import Path
 import os
+from urllib.parse import urlparse
 
 import dj_database_url
 from django.core.management.utils import get_random_secret_key
@@ -119,9 +120,26 @@ CLOUDINARY_STORAGE = {
     "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET", ""),
 }
 
+# Also support the common single-var Cloudinary config:
+#   CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
+_cloudinary_url = (os.environ.get("CLOUDINARY_URL") or "").strip()
+if _cloudinary_url and not (
+    CLOUDINARY_STORAGE.get("CLOUD_NAME")
+    and CLOUDINARY_STORAGE.get("API_KEY")
+    and CLOUDINARY_STORAGE.get("API_SECRET")
+):
+    try:
+        parsed = urlparse(_cloudinary_url)
+        if parsed.scheme == "cloudinary" and parsed.hostname and parsed.username and parsed.password:
+            CLOUDINARY_STORAGE["CLOUD_NAME"] = parsed.hostname
+            CLOUDINARY_STORAGE["API_KEY"] = parsed.username
+            CLOUDINARY_STORAGE["API_SECRET"] = parsed.password
+    except Exception:
+        pass
+
 # Use Cloudinary for uploaded media files when credentials are provided.
 # Fall back to local file storage if not configured.
-if os.environ.get("CLOUDINARY_CLOUD_NAME") and os.environ.get("CLOUDINARY_API_KEY") and os.environ.get("CLOUDINARY_API_SECRET"):
+if CLOUDINARY_STORAGE.get("CLOUD_NAME") and CLOUDINARY_STORAGE.get("API_KEY") and CLOUDINARY_STORAGE.get("API_SECRET"):
     DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 else:
     DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
