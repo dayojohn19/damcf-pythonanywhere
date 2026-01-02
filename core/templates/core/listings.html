@@ -21,7 +21,7 @@
             enctype="multipart/form-data">
         {% csrf_token %}
 
-        <div class="row mb-2.5">
+        <div class="row mb-2.5" style="display: grid;">
           <input type="text" name="title" placeholder="Title (required)" autocomplete="off" />
           <input type="text" name="price" placeholder="Price (e.g. 350000)" autocomplete="off" />
         </div>
@@ -60,21 +60,19 @@
     <div class="row justify-between items-baseline flex-wrap">
       <h2 class="h2 mt-0">All listings</h2>
       <div class="actions flex-wrap">
-        <a href="{% url 'listings' %}"
-           hx-get="{% url 'listings' %}"
-           hx-target="#properties"
-            hx-swap="outerHTML"
-            hx-push-url="true">
-          <button type="button">All</button>
-        </a>
+        <button type="button"
+                hx-get="{% url 'listings' %}"
+                hx-target="#properties"
+                hx-swap="outerHTML"
+                hx-select="#properties"
+                hx-push-url="true">All</button>
         {% for m in municipalities %}
-          <a href="{% url 'listings' %}?municipality={{ m.id }}"
-             hx-get="{% url 'listings' %}?municipality={{ m.id }}"
-             hx-target="#properties"
-             hx-swap="outerHTML"
-             hx-push-url="true">
-            <button type="button">{{ m.name }}</button>
-          </a>
+          <button type="button"
+                  hx-get="{% url 'listings' %}?municipality={{ m.id }}"
+                  hx-target="#properties"
+                  hx-swap="outerHTML"
+                  hx-select="#properties"
+                  hx-push-url="true">{{ m.name }}</button>
         {% endfor %}
       </div>
     </div>

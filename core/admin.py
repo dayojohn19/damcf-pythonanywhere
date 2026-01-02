@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Agent, ContactMessage, Municipality, Note, Property, PropertyImage, Service
+from .models import Agent, BookingRequest, ContactMessage, Municipality, Note, Property, PropertyImage, Service
 
 
 @admin.register(Note)
@@ -12,8 +12,9 @@ class NoteAdmin(admin.ModelAdmin):
 
 @admin.register(Property)
 class PropertyAdmin(admin.ModelAdmin):
-    list_display = ("title", "municipality", "status", "price", "created_at")
-    list_filter = ("status", "municipality")
+    list_display = ("title", "municipality", "status", "price", "is_featured", "created_at")
+    list_filter = ("status", "municipality", "is_featured")
+    list_editable = ("is_featured",)
     search_fields = ("title", "address", "description")
 
 
@@ -29,6 +30,14 @@ PropertyAdmin.inlines = [PropertyImageInline]
 class ContactMessageAdmin(admin.ModelAdmin):
     list_display = ("name", "email", "created_at")
     search_fields = ("name", "email", "message")
+    ordering = ("-created_at",)
+
+
+@admin.register(BookingRequest)
+class BookingRequestAdmin(admin.ModelAdmin):
+    list_display = ("property", "requested_date", "name", "email", "created_at")
+    list_filter = ("requested_date",)
+    search_fields = ("name", "email", "message", "property__title")
     ordering = ("-created_at",)
 
 
@@ -49,6 +58,6 @@ class MunicipalityAdmin(admin.ModelAdmin):
 
 @admin.register(Service)
 class ServiceAdmin(admin.ModelAdmin):
-    list_display = ("name", "active", "updated_at")
+    list_display = ("name", "active", "updated_at", "image")
     list_filter = ("active",)
     search_fields = ("name", "description")

@@ -4,7 +4,7 @@
 
 {% block content %}
   <h1 class="h1">Contact</h1>
-  <p class="muted max-w-[60ch]">Send us a message and we’ll get back to you.</p>
+  <p class="muted max-w-[60ch]">Send us a message and we'll get back to you.</p>
 
   {% if service %}
     <div class="card mt-3">
@@ -13,35 +13,165 @@
   {% endif %}
 
   {% if success %}
-    <div class="card border-emerald-200 bg-emerald-50">
+    <div class="card border-emerald-200 bg-emerald-50" id="contact-success">
       <strong>Message sent.</strong>
-      <div class="muted mt-1.5">Thanks — we’ll respond soon.</div>
+      <div class="muted mt-1.5">Thanks — we'll respond soon.</div>
     </div>
   {% endif %}
 
   {% if error %}
-    <div class="card border-rose-200 bg-rose-50">
-      <strong>Couldn’t send.</strong>
+    <div class="card border-rose-200 bg-rose-50" id="contact-error">
+      <strong>Couldn't send.</strong>
       <div class="muted mt-1.5">{{ error }}</div>
     </div>
   {% endif %}
 
+  <div id="contact-feedback" class="mt-3" hidden></div>
+
   <div class="card mt-4">
-    <form method="post" action="{% url 'contact' %}{% if service %}?service={{ service|urlencode }}{% endif %}">
-      {% csrf_token %}
+    <form id="contact-form">
+      <input  name="to_name" value="dayo_john16@yahoo.com" />
+      <!-- <input type="hidden" name="to_email" value="" /> -->
 
       <div class="row mb-2.5">
-        <input type="text" name="name" placeholder="Your name" value="{{ name|default:'' }}" autocomplete="off" />
-        <input type="email" name="email" placeholder="Email" value="{{ email|default:'' }}" autocomplete="off" />
+        <input type="text" name="from_name" placeholder="Your name" value="{{ name|default:'' }}" autocomplete="off" required />
+        <input type="email" name="sender_contact" placeholder="Email" value="{{ email|default:'' }}" autocomplete="off" required />
       </div>
 
+      {% if service %}
+        <input type="hidden" name="booking_inquiry" value="{{ service }}" />
+      {% else %}
+        <div class="mb-2.5">
+          <input type="text" name="booking_inquiry" placeholder="Subject (optional)" autocomplete="off" />
+        </div>
+      {% endif %}
+
       <div class="mb-2.5">
-        <textarea name="message" placeholder="How can we help?" class="textarea">{{ message|default:'' }}</textarea>
+        <textarea name="message" placeholder="How can we help?" class="textarea" required>{{ message|default:'' }}</textarea>
       </div>
 
       <button class="btn primary" type="submit">Send</button>
     </form>
   </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script>
+    (function () {
+        const EMAILJS_PUBLIC_KEY = "kPR5fCmH0j3E0NSyr";
+      function initEmailJs() {
+        const emailjsRef = window.emailjs;
+        if (!emailjsRef || !emailjsRef.init) return false;
+        if (window.__emailjs_inited__) return true;
+        try {
+          try {
+            emailjsRef.init({ publicKey: EMAILJS_PUBLIC_KEY });
+          } catch (_) {
+            emailjsRef.init(EMAILJS_PUBLIC_KEY);
+          }
+          window.__emailjs_inited__ = true;
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+
+      // Best effort init on load
+      initEmailJs();
+
+      const form = document.getElementById('contact-form');
+      const feedback = document.getElementById('contact-feedback');
+      if (!form || !feedback) return;
+
+      function showFeedback(kind, title, detail) {
+        feedback.hidden = false;
+        feedback.innerHTML =
+          `<div class="card ${kind === 'ok' ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'}">` +
+          `<strong>${title}</strong>` +
+          (detail ? `<div class="muted mt-1.5">${detail}</div>` : '') +
+          `</div>`;
+      }
+
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+
+        showFeedback('ok', 'Sending...', 'Please wait.');
+
+        const toNameEl = form.elements.namedItem('to_name');
+        const toEmailEl = form.elements.namedItem('to_email');
+
+        if (toNameEl && 'value' in toNameEl && !String(toNameEl.value || '').trim()) {
+          toNameEl.value = 'Real Estate Team';
+        }
+
+        const messageEl = form.elements.namedItem('message');
+        const bookingInquiryEl = form.elements.namedItem('booking_inquiry');
+        const senderContactEl = form.elements.namedItem('sender_contact');
+        const senderNameEl = form.elements.namedItem('from_name');
+
+        const originalMessage = (messageEl && 'value' in messageEl) ? String(messageEl.value || '') : '';
+        const bookingInquiry = (bookingInquiryEl && 'value' in bookingInquiryEl) ? String(bookingInquiryEl.value || '') : '';
+        const senderContact = (senderContactEl && 'value' in senderContactEl) ? String(senderContactEl.value || '') : '';
+        const senderName = (senderNameEl && 'value' in senderNameEl) ? String(senderNameEl.value || '') : '';
+
+        if (messageEl && 'value' in messageEl) {
+          const fullMessage =
+            `${originalMessage}\n\n` +
+            (bookingInquiry ? `Inquiry: ${bookingInquiry}\n\n` : '') +
+            `Contact me:\n${senderName}\n${senderContact}`;
+          messageEl.value = fullMessage;
+        }
+
+          if (!window.emailjs || !window.emailjs.sendForm) {
+            showFeedback('err', "Couldn't send.", 'EmailJS is blocked or not loaded. Disable ad-blockers or try another network.');
+            if (submitBtn) submitBtn.disabled = false;
+            return;
+          }
+
+          // Re-init right before sending (avoids "public key is required" race/state issues)
+          if (!initEmailJs()) {
+            showFeedback('err', "Couldn't send.", 'EmailJS could not initialize (public key missing). Check your EmailJS public key.');
+            if (submitBtn) submitBtn.disabled = false;
+            return;
+          }
+
+          const trySend = () => window.emailjs.sendForm(
+            'service_jv335d7',
+            'template_hzlk188',
+            this,
+            { publicKey: EMAILJS_PUBLIC_KEY },
+          );
+
+          Promise.resolve()
+          .then(trySend)
+          .catch((error) => {
+            const text = (error && error.text) ? String(error.text) : '';
+            if (text.toLowerCase().includes('public key is required')) {
+              return window.emailjs.sendForm('service_jv335d7', 'template_hzlk188', this, EMAILJS_PUBLIC_KEY);
+            }
+            throw error;
+          })
+          .then(() => {
+            console.log('SUCCESS!');
+            showFeedback('ok', 'Message sent.', "Thanks — we'll respond soon.");
+            form.reset();
+          })
+          .catch((error) => {
+            console.log('FAILED...', error);
+            showFeedback('err', "Couldn't send.", (error && error.text) ? error.text : 'Please try again.');
+
+            if (messageEl && 'value' in messageEl) {
+              messageEl.value = originalMessage;
+            }
+          })
+          .finally(() => {
+            if (submitBtn) submitBtn.disabled = false;
+          });
+      });
+    })();
+  </script>
 
   <p class="muted mt-3.5">Or visit the <a class="link" href="{% url 'listings' %}">Listings</a> page.</p>
 {% endblock %}

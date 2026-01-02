@@ -1,6 +1,13 @@
+{% load cloudinary_extras %}
+
 <div id="services-grid" class="grid">
   {% for service in services %}
     <div class="card">
+      {% if service.image %}
+        <div class="thumb">
+          <img src="{{ service.image|media_url }}" alt="{{ service.name }}" loading="lazy" />
+        </div>
+      {% endif %}
       <div class="title">{{ service.name }}</div>
       {% if service.description %}
         <div class="muted mt-2">{{ service.description }}</div>

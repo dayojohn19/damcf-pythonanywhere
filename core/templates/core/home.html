@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 
+{% load static cloudinary_extras %}
+
 {% block title %}Home{% endblock %}
 
 {% block content %}
-  <section class="hero">
+  <section class="hero hero--bg" style="--hero-bg-image: url('{% static 'img/hero-bg.svg' %}');">
     <div>
-      <h1 class="h1">Find your next home</h1>
+      <h1 class="h1">Find your next Property</h1>
       <p class="muted mt-2.5 max-w-[58ch]">
-        Browse listings, view details, and contact us. Built with Django + HTMX for fast interactions.
+        Browse listings, view details, and contact us.
       </p>
       <div class="row mt-4 gap-2.5">
         <a class="btn primary" href="{% url 'listings' %}">Browse Listings</a>
@@ -27,7 +29,7 @@
         <a class="card card-link" href="{% url 'property_detail' prop.id %}">
               <div class="thumb">
               {% for img in prop.images.all|slice:":1" %}
-              <img src="{{ img.image.url }}" alt="{{ prop.title }}" loading="lazy" />
+              <img src="{{ img.image|media_url }}" alt="{{ prop.title }}" loading="lazy" />
             {% empty %}
               <div class="thumb-empty muted">No photo</div>
             {% endfor %}

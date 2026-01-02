@@ -1,8 +1,10 @@
-<li id="property-{{ prop.id }}">
+{% load cloudinary_extras %}
+
+<li id="property-{{ prop.id }}" class="grid gap-2">
   <div class="flex gap-3 items-start">
     <div class="w-[90px] shrink-0">
       {% for img in prop.images.all|slice:":1" %}
-        <img src="{{ img.image }}" alt="{{ prop.title }}" width="90" height="68" loading="lazy" class="w-[90px] h-[68px] object-cover rounded-lg border border-slate-200" />
+        <img src="{{ img.image|media_url }}" alt="{{ prop.title }}" width="90" height="68" loading="lazy" class="w-[90px] h-[68px] object-cover rounded-lg border border-slate-200" />
       {% empty %}
         <div class="muted h-[68px] rounded-lg border border-dashed border-slate-300 flex items-center justify-center">
           No photo
@@ -23,9 +25,32 @@
     </div>
   </div>
 
-  <div class="actions">
+  <div class="actions flex-wrap">
     <a class="btn" href="{% url 'property_detail' prop.id %}">View</a>
+    <button class="btn" type="button"
+            hx-get="{% url 'property_book' prop.id %}"
+            hx-target="#booking-{{ prop.id }}"
+          hx-swap="innerHTML"
+          hx-select="div"
+          hx-push-url="false"
+          hx-disinherit="*">
+      Book now
+    </button>
     {% if user.is_authenticated %}
+      {% if user.is_superuser %}
+        <form hx-post="{% url 'property_set_featured' prop.id %}"
+              hx-trigger="change"
+              hx-target="#property-{{ prop.id }}"
+              hx-swap="outerHTML"
+              hx-push-url="false"
+              hx-disinherit="*">
+          {% csrf_token %}
+          <label class="muted" style="display:flex; align-items:center; gap:0.5rem;">
+            <input type="checkbox" name="is_featured" {% if prop.is_featured %}checked{% endif %} />
+            Featured
+          </label>
+        </form>
+      {% endif %}
       {% if user.is_superuser or prop.created_by_id == user.id %}
       <a class="btn" href="{% url 'property_edit' prop.id %}">Edit</a>
 
@@ -38,4 +63,6 @@
       {% endif %}
     {% endif %}
   </div>
+
+  <div id="booking-{{ prop.id }}" class="w-full"></div>
 </li>

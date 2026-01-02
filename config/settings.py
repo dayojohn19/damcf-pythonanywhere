@@ -106,6 +106,10 @@ else:
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Optional: phone number (E.164 digits) for WhatsApp booking requests.
+# Example: 14155552671 (no '+' and no spaces). If empty, WhatsApp redirect is disabled.
+WHATSAPP_BOOKING_PHONE = os.environ.get("WHATSAPP_BOOKING_PHONE", "").strip()
+
 # Cloudinary storage configuration
 # Configure these via environment variables in production (do NOT commit secrets).
 CLOUDINARY_STORAGE = {
@@ -136,3 +140,28 @@ SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
+
+# Email (SMTP)
+# To enable SMTP delivery, set at least:
+#   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, CONTACT_TO_EMAIL
+SMTP_HOST = os.environ.get("SMTP_HOST", "").strip()
+SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
+SMTP_USER = os.environ.get("SMTP_USER", "").strip()
+SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "").strip()
+SMTP_USE_TLS = _env_bool(os.environ.get("SMTP_USE_TLS"), default=True)
+SMTP_USE_SSL = _env_bool(os.environ.get("SMTP_USE_SSL"), default=False)
+
+DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "").strip() or SMTP_USER
+CONTACT_TO_EMAIL = os.environ.get("CONTACT_TO_EMAIL", "").strip() or SMTP_USER
+
+if SMTP_HOST and CONTACT_TO_EMAIL:
+    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+    EMAIL_HOST = SMTP_HOST
+    EMAIL_PORT = SMTP_PORT
+    EMAIL_HOST_USER = SMTP_USER
+    EMAIL_HOST_PASSWORD = SMTP_PASSWORD
+    EMAIL_USE_TLS = SMTP_USE_TLS
+    EMAIL_USE_SSL = SMTP_USE_SSL
+else:
+    # Dev-friendly fallback: prints email to the console.
+    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"

@@ -1,37 +1,78 @@
-<div id="properties">
-  <ul>
+<div id="properties" class="w-full">
+  <ul class="space-y-4">
     {% for prop in page_obj.object_list %}
       {% include "core/_property_row.html" %}
     {% empty %}
-      <li><span class="muted">No properties yet.</span></li>
+      <li>
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+          <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+          </svg>
+          <span class="text-gray-500">No properties yet.</span>
+        </div>
+      </li>
     {% endfor %}
   </ul>
 
   {% if page_obj.paginator.num_pages > 1 %}
-    <div class="row justify-between mt-3">
-      <div class="muted">
-        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
-      </div>
-      <div class="actions">
+    <nav class="mt-8 flex items-center justify-between border-t border-gray-200 pt-6" aria-label="Properties pagination">
+      <div class="flex-1 flex justify-start">
         {% if page_obj.has_previous %}
-          <a href="?page={{ page_obj.previous_page_number }}{% if selected_municipality_id %}&municipality={{ selected_municipality_id }}{% endif %}"
+          <a class="relative inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
+             role="button"
+             href="?page={{ page_obj.previous_page_number }}{% if selected_municipality_id %}&municipality={{ selected_municipality_id }}{% endif %}"
              hx-get="?page={{ page_obj.previous_page_number }}{% if selected_municipality_id %}&municipality={{ selected_municipality_id }}{% endif %}"
              hx-target="#properties"
              hx-swap="outerHTML"
+             hx-select="#properties"
              hx-push-url="true">
-            <button type="button">Prev</button>
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Previous
           </a>
+        {% else %}
+          <span class="relative inline-flex items-center px-4 py-2 text-sm bg-gray-100 border border-gray-200 rounded-md text-gray-400 cursor-not-allowed" 
+                aria-disabled="true">
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Previous
+          </span>
         {% endif %}
+      </div>
+
+      <div class="flex-1 flex justify-center">
+        <span class="text-sm text-gray-700">
+          Page <span class="font-medium">{{ page_obj.number }}</span> of <span class="font-medium">{{ page_obj.paginator.num_pages }}</span>
+        </span>
+      </div>
+
+      <div class="flex-1 flex justify-end">
         {% if page_obj.has_next %}
-          <a href="?page={{ page_obj.next_page_number }}{% if selected_municipality_id %}&municipality={{ selected_municipality_id }}{% endif %}"
+          <a class="relative inline-flex items-center px-4 py-2 text-sm bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" 
+             role="button"
+             href="?page={{ page_obj.next_page_number }}{% if selected_municipality_id %}&municipality={{ selected_municipality_id }}{% endif %}"
              hx-get="?page={{ page_obj.next_page_number }}{% if selected_municipality_id %}&municipality={{ selected_municipality_id }}{% endif %}"
              hx-target="#properties"
              hx-swap="outerHTML"
+             hx-select="#properties"
              hx-push-url="true">
-            <button type="button">Next</button>
+            Next
+            <svg class="h-5 w-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
           </a>
+        {% else %}
+          <span class="relative inline-flex items-center px-4 py-2 text-sm bg-gray-100 border border-gray-200 rounded-md text-gray-400 cursor-not-allowed" 
+                aria-disabled="true">
+            Next
+            <svg class="h-5 w-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+          </span>
         {% endif %}
       </div>
-    </div>
+    </nav>
   {% endif %}
 </div>

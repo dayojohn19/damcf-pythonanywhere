@@ -1,5 +1,6 @@
 from django import template
 from django.core.files.storage import default_storage
+from django.conf import settings
 
 register = template.Library()
 
@@ -49,3 +50,35 @@ def cloud_url(file_field, width=0):
 
     # No cloudinary: return storage URL
     return default_storage.url(public_id)
+
+
+@register.filter(name="media_url")
+def media_url(value: object) -> str:
+    """Normalize a stored image string into a browser-safe absolute URL.
+
+    - If `value` is already absolute (http/https or starts with '/'), return as-is.
+    - If `value` is a relative path (e.g. 'properties/2025/...'), prefix with MEDIA_URL.
+
+    This is useful because `PropertyImage.image` is a URLField and may contain either
+    a Cloudinary URL or a local MEDIA-relative path.
+    """
+    if not value:
+        return ""
+
+    s = str(value).strip()
+    if not s:
+        return ""
+
+    if s.startswith(("http://", "https://", "//")):
+        return s
+    if s.startswith("/"):
+        return s
+
+    media_prefix = (getattr(settings, "MEDIA_URL", "/media/") or "/media/").strip()
+    media_prefix = "/" + media_prefix.strip("/") + "/"
+
+    # Avoid duplicating the prefix if the stored value already begins with it.
+    if s.startswith(media_prefix.lstrip("/")):
+        return "/" + s.lstrip("/")
+
+    return media_prefix + s.lstrip("/")

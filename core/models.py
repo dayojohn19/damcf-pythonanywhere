@@ -42,6 +42,7 @@ class Municipality(models.Model):
 class Service(models.Model):
     name = models.CharField(max_length=120, unique=True)
     description = models.TextField(blank=True)
+    image = models.URLField(max_length=2000, blank=True, null=True)
     active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -79,6 +80,7 @@ class Property(models.Model):
     price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.FOR_SALE)
     description = models.TextField(blank=True)
+    is_featured = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -144,6 +146,21 @@ class ContactMessage(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name} <{self.email}>"
+
+
+class BookingRequest(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, related_name="booking_requests")
+    name = models.CharField(max_length=120)
+    email = models.EmailField()
+    requested_date = models.DateField()
+    message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self) -> str:
+        return f"Booking request for {self.property_id} on {self.requested_date}"
 
 
 class Agent(models.Model):

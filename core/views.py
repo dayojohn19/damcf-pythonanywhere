@@ -13,11 +13,15 @@ from django.contrib.auth.models import Group
 from django.conf import settings
 from django.contrib import messages
 from django.urls import reverse
+from django.http import JsonResponse
+from django.core.mail import EmailMessage
 
-from .models import Agent, ContactMessage, Municipality, Note, Property, PropertyImage, Service
+from .models import Agent, BookingRequest, ContactMessage, Municipality, Note, Property, PropertyImage, Service
 from pathlib import Path
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from datetime import date
+from urllib.parse import quote
 
 try:
     import cloudinary.uploader as _cloudinary_uploader
@@ -43,28 +47,32 @@ def _upload_file_and_get_url(file_obj, folder: str) -> str | None:
         except Exception as e:
             print('Cant Save in Cloudinary')
             print(e)
-            pass
-    # try:
 
-    #     # Fallback: use Django `default_storage` so this works with local MEDIA_ROOT
-    #     # or remote storage backends (S3, etc.). Return the public URL if available.
-    #     try:
-    #         name = secrets.token_urlsafe(8) + "-" + getattr(file_obj, "name", "upload")
-    #         storage_path = f"{folder}/{name}"
-    #         # read file content (works for InMemoryUploadedFile and TemporaryUploadedFile)
-    #         content = ContentFile(file_obj.read())
-    #         saved_path = default_storage.save(storage_path, content)
-    #         try:
-    #             return default_storage.url(saved_path)
-    #         except Exception:
-    #             # If storage doesn't provide a URL, try MEDIA_URL fallback
-    #             media_url = (settings.MEDIA_URL or "/media").rstrip("/")
-    #             return f"{media_url}/{saved_path.lstrip('/')}"
-    #     except Exception:
-    #         # final fallback: give up and return None
-    #         return None
-    # except Exception:
-    #     return None
+    # Fallback: save to the configured Django storage and return a public URL.
+    try:
+        original_name = getattr(file_obj, "name", "upload") or "upload"
+        safe_name = f"{secrets.token_urlsafe(8)}-{original_name}"
+        storage_path = f"{folder}/{safe_name}"
+
+        content = ContentFile(file_obj.read())
+        saved_path = default_storage.save(storage_path, content)
+
+        try:
+            url = default_storage.url(saved_path)
+        except Exception:
+            url = None
+
+        if url:
+            # Ensure URL is absolute from site root (avoid relative 'media/...').
+            if url.startswith("http") or url.startswith("//") or url.startswith("/"):
+                return url
+            return "/" + url.lstrip("/")
+
+        media_url = (getattr(settings, "MEDIA_URL", "/media/") or "/media/").strip()
+        media_url = "/" + media_url.strip("/") + "/"
+        return media_url + str(saved_path).lstrip("/")
+    except Exception:
+        return None
 
 
 def _is_superuser(user) -> bool:
@@ -96,7 +104,10 @@ def index(request: HttpRequest) -> HttpResponse:
 
 
 def home(request: HttpRequest) -> HttpResponse:
-    featured = Property.objects.select_related("municipality").prefetch_related("images").all()[:6]
+    featured_qs = Property.objects.select_related("municipality").prefetch_related("images")
+    featured = list(featured_qs.filter(is_featured=True).order_by("-updated_at", "-created_at")[:6])
+    if not featured:
+        featured = list(featured_qs.all()[:6])
     return render(request, "core/home.html", {"featured": featured})
 
 
@@ -130,13 +141,6 @@ def listings(request: HttpRequest) -> HttpResponse:
         "selected_municipality_id": selected_municipality_id,
     }
 
-    # HTMX pagination/filtering swaps only the listings list.
-    # But boosted navigation (full page transitions) must return full HTML.
-    hx_request = (request.headers.get("HX-Request") or "").lower() == "true"
-    hx_boosted = (request.headers.get("HX-Boosted") or "").lower() == "true"
-    if hx_request and not hx_boosted:
-        return render(request, "core/_properties_list.html", context)
-
     return render(request, "core/listings.html", context)
 
 
@@ -163,8 +167,103 @@ def property_detail(request: HttpRequest, pk: int) -> HttpResponse:
     )
 
 
+@require_http_methods(["GET", "POST"])
+def property_book(request: HttpRequest, pk: int) -> HttpResponse:
+    prop = get_object_or_404(Property, pk=pk)
+
+    if request.method == "GET":
+        if (request.GET.get("clear") or "").strip() == "1":
+            return HttpResponse("")
+        return render(request, "core/_property_booking_form.html", {"property": prop})
+
+    name = (request.POST.get("name") or "").strip()
+    email = (request.POST.get("email") or "").strip()
+    requested_date_raw = (request.POST.get("requested_date") or "").strip()
+    message = (request.POST.get("message") or "").strip()
+
+    errors: list[str] = []
+    requested_date_val: date | None = None
+    if not name:
+        errors.append("Name is required.")
+    if not email:
+        errors.append("Email is required.")
+    if not requested_date_raw:
+        errors.append("Please pick a date.")
+    else:
+        try:
+            requested_date_val = date.fromisoformat(requested_date_raw)
+        except ValueError:
+            errors.append("Please pick a valid date.")
+
+    if errors:
+        return render(
+            request,
+            "core/_property_booking_form.html",
+            {
+                "property": prop,
+                "errors": errors,
+                "name": name,
+                "email": email,
+                "requested_date": requested_date_raw,
+                "message": message,
+            },
+        )
+
+    BookingRequest.objects.create(
+        property=prop,
+        name=name,
+        email=email,
+        requested_date=requested_date_val,  # type: ignore[arg-type]
+        message=message,
+    )
+
+    send_whatsapp = (request.POST.get("send_whatsapp") or "").strip() == "1"
+    whatsapp_phone = (getattr(settings, "WHATSAPP_BOOKING_PHONE", "") or "").strip()
+    if send_whatsapp and whatsapp_phone:
+        property_url = request.build_absolute_uri(reverse("property_detail", kwargs={"pk": prop.pk}))
+        text_lines = [
+            "Booking request",
+            f"Property: {prop.title}",
+            f"Date: {requested_date_raw}",
+            f"Name: {name}",
+            f"Email: {email}",
+            f"Link: {property_url}",
+        ]
+        if message:
+            text_lines.append(f"Message: {message}")
+
+        wa_url = f"https://wa.me/{whatsapp_phone}?text={quote('\n'.join(text_lines))}"
+        if request.headers.get("HX-Request") == "true":
+            response = HttpResponse("")
+            response.headers["HX-Redirect"] = wa_url
+            return response
+        return redirect(wa_url)
+
+    if request.headers.get("HX-Request") == "true":
+        return render(request, "core/_property_booking_success.html", {"property": prop})
+
+    messages.success(request, "Booking request sent.")
+    return redirect("property_detail", pk=prop.pk)
+
+
 def contact(request: HttpRequest) -> HttpResponse:
     service = (request.GET.get("service") or "").strip()
+    prefill_name = (request.GET.get("name") or "").strip()
+    prefill_email = (request.GET.get("email") or "").strip()
+    prefill_requested_date = (request.GET.get("requested_date") or "").strip()
+    prefill_user_message = (request.GET.get("message") or "").strip()
+    property_id_raw = (request.GET.get("property") or "").strip()
+    prop = None
+    if property_id_raw:
+        try:
+            prop = Property.objects.filter(pk=int(property_id_raw)).first()
+        except (TypeError, ValueError):
+            prop = None
+
+    def _wants_json() -> bool:
+        accept = (request.headers.get("Accept") or "").lower()
+        return "application/json" in accept or (request.headers.get("X-Requested-With") or "") == "fetch"
+
     if request.method == "POST":
         name = (request.POST.get("name") or "").strip()
         email = (request.POST.get("email") or "").strip()
@@ -172,14 +271,59 @@ def contact(request: HttpRequest) -> HttpResponse:
 
         if name and email and message:
             ContactMessage.objects.create(name=name, email=email, message=message)
+
+            # Send email via SMTP (configured in settings).
+            subject = f"New contact message from {name}"
+            if service:
+                subject = f"New booking/contact: {service} — {name}"
+            body_lines = [
+                f"Name: {name}",
+                f"Email: {email}",
+            ]
+            if service:
+                body_lines.append(f"Service: {service}")
+            body_lines.append("")
+            body_lines.append(message)
+
+            try:
+                to_email = (getattr(settings, "CONTACT_TO_EMAIL", "") or "").strip()
+                if not to_email:
+                    to_email = (getattr(settings, "EMAIL_HOST_USER", "") or "").strip()
+                if not to_email:
+                    to_email = (getattr(settings, "DEFAULT_FROM_EMAIL", "") or "").strip()
+
+                from_email = (getattr(settings, "DEFAULT_FROM_EMAIL", "") or "").strip() or to_email
+                if not to_email:
+                    raise ValueError(
+                        "Email is not configured. Set CONTACT_TO_EMAIL (and SMTP_HOST/SMTP_USER/SMTP_PASSWORD) in the environment or .env, and restart the server."
+                    )
+
+                msg = EmailMessage(
+                    subject=subject,
+                    body="\n".join(body_lines),
+                    from_email=from_email,
+                    to=[to_email],
+                    reply_to=[email],
+                )
+                msg.send(fail_silently=False)
+            except Exception as e:
+                if _wants_json():
+                    return JsonResponse({"ok": False, "error": f"Could not send email: {e}"}, status=500)
+                return render(request, "core/contact.html", {"success": False, "error": f"Could not send email: {e}"})
+
+            if _wants_json():
+                return JsonResponse({"ok": True})
             return render(request, "core/contact.html", {"success": True})
 
+        error_text = "Please fill out name, email, and message."
+        if _wants_json():
+            return JsonResponse({"ok": False, "error": error_text}, status=400)
         return render(
             request,
             "core/contact.html",
             {
                 "success": False,
-                "error": "Please fill out name, email, and message.",
+                "error": error_text,
                 "name": name,
                 "email": email,
                 "message": message,
@@ -187,11 +331,45 @@ def contact(request: HttpRequest) -> HttpResponse:
             },
         )
 
-    prefill_message = ""
-    if service:
-        prefill_message = f"Booking request: {service}\n\n"
+    # If a property was provided, default the "service" (subject) to the property title.
+    if prop and not service:
+        service = prop.title
 
-    return render(request, "core/contact.html", {"message": prefill_message, "service": service})
+    prefill_lines: list[str] = []
+    if service:
+        prefill_lines.append(f"Booking request: {service}")
+
+    if prefill_requested_date:
+        prefill_lines.append(f"Requested date: {prefill_requested_date}")
+
+    if prop:
+        try:
+            prop_url = request.build_absolute_uri(reverse("property_detail", kwargs={"pk": prop.pk}))
+        except Exception:
+            prop_url = ""
+
+        if prop_url:
+            prefill_lines.append(f"Property link: {prop_url}")
+
+    if prefill_user_message:
+        prefill_lines.append("")
+        prefill_lines.append("Message:")
+        prefill_lines.append(prefill_user_message)
+
+    prefill_message = "\n".join(prefill_lines).strip()
+    if prefill_message:
+        prefill_message += "\n\n"
+
+    return render(
+        request,
+        "core/contact.html",
+        {
+            "message": prefill_message,
+            "service": service,
+            "name": prefill_name,
+            "email": prefill_email,
+        },
+    )
 
 
 @require_http_methods(["GET", "POST"])
@@ -222,10 +400,15 @@ def service_create(request: HttpRequest) -> HttpResponse:
     description = (request.POST.get("description") or "").strip()
     active = (request.POST.get("active") or "") == "on"
 
+    image_url = None
+    image_file = request.FILES.get("image")
+    if image_file is not None:
+        image_url = _upload_file_and_get_url(image_file, "services")
+
     if name:
         Service.objects.update_or_create(
             name=name,
-            defaults={"description": description, "active": active},
+            defaults={"description": description, "active": active, "image": image_url},
         )
 
     if request.headers.get("HX-Request") == "true":
@@ -245,7 +428,16 @@ def service_edit(request: HttpRequest, pk: int) -> HttpResponse:
             service.name = name
         service.description = (request.POST.get("description") or "").strip()
         service.active = (request.POST.get("active") or "") == "on"
-        service.save(update_fields=["name", "description", "active"])
+
+        update_fields = ["name", "description", "active", "updated_at"]
+        image_file = request.FILES.get("image")
+        if image_file is not None:
+            image_url = _upload_file_and_get_url(image_file, "services")
+            if image_url:
+                service.image = image_url
+                update_fields.append("image")
+
+        service.save(update_fields=update_fields)
         return redirect("services")
 
     return render(request, "core/service_edit.html", {"service": service})
@@ -328,7 +520,7 @@ def agent_create(request: HttpRequest) -> HttpResponse:
             if created or not user.has_usable_password():
                 user.set_password(temp_password)
                 user.save(update_fields=["password"])
-                messages.success(
+                messages.warning(
                     request,
                     f"Agent account created/updated. Login: {email}  Password: {temp_password} (ask them to change it).",
                 )
@@ -488,6 +680,7 @@ def property_create(request: HttpRequest) -> HttpResponse:
                 PropertyImage.objects.create(property=prop, image=url)
 
     if request.headers.get("HX-Request") == "true":
+        # return redirect("listings")
         return _properties_list_partial(request)
     return redirect("listings")
 
@@ -584,6 +777,22 @@ def property_delete(request: HttpRequest, pk: int) -> HttpResponse:
 
     if request.headers.get("HX-Request") == "true":
         return _properties_list_partial(request)
+    return redirect("listings")
+
+
+@require_POST
+@user_passes_test(_is_superuser)
+def property_set_featured(request: HttpRequest, pk: int) -> HttpResponse:
+    prop = get_object_or_404(
+        Property.objects.select_related("municipality"),
+        pk=pk,
+    )
+
+    prop.is_featured = (request.POST.get("is_featured") or "") == "on"
+    prop.save(update_fields=["is_featured", "updated_at"])
+
+    if request.headers.get("HX-Request") == "true":
+        return render(request, "core/_property_row.html", {"prop": prop})
     return redirect("listings")
 
 

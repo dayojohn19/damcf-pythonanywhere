@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 
+{% load cloudinary_extras %}
+
 {% block title %}Edit Service{% endblock %}
 
 {% block content %}
@@ -7,15 +9,22 @@
   <p class="muted"><a class="link" href="{% url 'services' %}">← Back to services</a></p>
 
   <div class="card mt-4 max-w-[760px]">
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
 
       <div class="row mb-2.5">
         <input type="text" name="name" value="{{ service.name }}" placeholder="Name" autocomplete="off" />
+        <input type="file" name="image" accept="image/*" />
         <label class="muted flex gap-2 items-center">
           <input type="checkbox" name="active" {% if service.active %}checked{% endif %} /> Active
         </label>
       </div>
+
+      {% if service.image %}
+        <div class="thumb mb-2.5">
+          <img src="{{ service.image|media_url }}" alt="{{ service.name }}" loading="lazy" />
+        </div>
+      {% endif %}
 
       <div class="mb-2.5">
         <textarea name="description" class="textarea" placeholder="Description (optional)">{{ service.description }}</textarea>

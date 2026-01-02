@@ -47,6 +47,249 @@
       });
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
+    <script>
+      (function () {
+        // EmailJS is used for client-side sending (no SMTP required)
+        const EMAILJS_PUBLIC_KEY = "kPR5fCmH0j3E0NSyr";
+        const EMAILJS_SERVICE_ID = "service_jv335d7";
+        const EMAILJS_TEMPLATE_ID = "template_hzlk188";
+
+        function initEmailJsIfAvailable() {
+          if (!window.emailjs || !window.emailjs.init) return false;
+          if (window.__emailjs_inited__) return true;
+          try {
+            try {
+              window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+            } catch (_) {
+              window.emailjs.init(EMAILJS_PUBLIC_KEY);
+            }
+            window.__emailjs_inited__ = true;
+            return true;
+          } catch (_) {
+            return false;
+          }
+        }
+
+        function emailJsAvailable() {
+          initEmailJsIfAvailable();
+          return !!(window.emailjs && window.emailjs.sendForm);
+        }
+
+        function showInlineFeedback(el, kind, title, detail) {
+          if (!el) return;
+          el.hidden = false;
+          el.innerHTML =
+            `<div class="card ${kind === 'ok' ? 'border-emerald-200 bg-emerald-50' : 'border-rose-200 bg-rose-50'}">` +
+            `<strong>${title}</strong>` +
+            (detail ? `<div class="muted mt-1.5">${detail}</div>` : '') +
+            `</div>`;
+        }
+
+        // CONTACT: delegated submit handler (works even when page is HTMX-swapped)
+        document.addEventListener('submit', function (event) {
+          const form = event.target;
+          if (!(form instanceof HTMLFormElement)) return;
+          if (form.id !== 'contact-form') return;
+
+          event.preventDefault();
+
+          const feedback = document.getElementById('contact-feedback');
+          const submitBtn = form.querySelector('button[type="submit"]');
+          if (submitBtn) submitBtn.disabled = true;
+          showInlineFeedback(feedback, 'ok', 'Sending...', 'Please wait.');
+
+          if (!emailJsAvailable()) {
+            showInlineFeedback(
+              feedback,
+              'err',
+              "Email isn't available.",
+              'The EmailJS script may be blocked. Please refresh and disable ad-blockers, or try another network.'
+            );
+            if (submitBtn) submitBtn.disabled = false;
+            return;
+          }
+
+          const messageEl = form.elements.namedItem('message');
+          const bookingInquiryEl = form.elements.namedItem('booking_inquiry');
+          const senderContactEl = form.elements.namedItem('sender_contact');
+          const senderNameEl = form.elements.namedItem('from_name');
+          const replyToEl = form.elements.namedItem('reply_to');
+
+          const originalMessage = (messageEl && 'value' in messageEl) ? String(messageEl.value || '') : '';
+          const bookingInquiry = (bookingInquiryEl && 'value' in bookingInquiryEl) ? String(bookingInquiryEl.value || '') : '';
+          const senderContact = (senderContactEl && 'value' in senderContactEl) ? String(senderContactEl.value || '') : '';
+          const senderName = (senderNameEl && 'value' in senderNameEl) ? String(senderNameEl.value || '') : '';
+
+          if (replyToEl && 'value' in replyToEl) replyToEl.value = senderContact;
+
+          if (messageEl && 'value' in messageEl) {
+            const fullMessage =
+              `${originalMessage}\n\n` +
+              (bookingInquiry ? `Inquiry: ${bookingInquiry}\n\n` : '') +
+              `Contact me:\n${senderName}\n${senderContact}`;
+            messageEl.value = fullMessage;
+          }
+
+          window.emailjs.sendForm(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, form)
+            .then(() => {
+              showInlineFeedback(feedback, 'ok', 'Message sent.', "Thanks — we'll respond soon.");
+              form.reset();
+            })
+            .catch((error) => {
+              const status = (error && typeof error.status !== 'undefined') ? String(error.status) : '';
+              const text = (error && error.text) ? String(error.text) : '';
+              const msg = (status || text) ? `EmailJS ${status} ${text}`.trim() : 'Please try again.';
+              showInlineFeedback(feedback, 'err', "Couldn't send.", msg);
+
+              if (messageEl && 'value' in messageEl) messageEl.value = originalMessage;
+            })
+            .finally(() => {
+              if (submitBtn) submitBtn.disabled = false;
+            });
+        });
+
+        // BOOKING: delegated click handler
+        function showBookingEmailFeedback(propertyId, kind, title, detail) {
+          const el = document.getElementById(`booking-email-feedback-${propertyId}`);
+          showInlineFeedback(el, kind, title, detail);
+        }
+
+        function ensureBookingEmailFeedbackEl(form, propertyId) {
+          const id = `booking-email-feedback-${propertyId}`;
+          let el = document.getElementById(id);
+          if (el) return el;
+
+          el = document.createElement('div');
+          el.id = id;
+          el.className = 'mt-2';
+          el.hidden = true;
+          form.insertBefore(el, form.firstChild);
+          return el;
+        }
+
+        window.sendBookingViaEmail = function (btn) {
+          let submitButtons = [];
+          try {
+            if (!btn) return false;
+            const form = btn.closest?.('form');
+            if (!form) return false;
+
+            const propertyId = btn.getAttribute('data-property-id') || 'unknown';
+            ensureBookingEmailFeedbackEl(form, propertyId);
+
+            submitButtons = Array.from(form.querySelectorAll('button'));
+            submitButtons.forEach((b) => { b.disabled = true; });
+            showBookingEmailFeedback(propertyId, 'ok', 'Sending...', 'Please wait.');
+
+            if (!emailJsAvailable()) {
+              showBookingEmailFeedback(
+                propertyId,
+                'err',
+                "Email isn't available.",
+                'The EmailJS script may be blocked. Please refresh and disable ad-blockers, or try another network.'
+              );
+              submitButtons.forEach((b) => { b.disabled = false; });
+              return false;
+            }
+
+            const name = String(form.elements.namedItem('name')?.value || '');
+            const email = String(form.elements.namedItem('email')?.value || '');
+            const requestedDate = String(form.elements.namedItem('requested_date')?.value || '');
+            const originalMessage = String(form.elements.namedItem('message')?.value || '');
+            const propertyTitle = String(form.elements.namedItem('property_title')?.value || '');
+            const propertyUrl = String(form.elements.namedItem('property_url')?.value || '');
+
+            const fullMessage =
+              `${originalMessage}\n\n` +
+              `Booking Request\n` +
+              (propertyTitle ? `Property: ${propertyTitle}\n` : '') +
+              (propertyUrl ? `Link: ${propertyUrl}\n` : '') +
+              (requestedDate ? `Requested date: ${requestedDate}\n\n` : '\n') +
+              `Contact me:\n${name}\n${email}`;
+
+            let fromNameEl = form.elements.namedItem('from_name');
+            if (!fromNameEl) {
+              fromNameEl = document.createElement('input');
+              fromNameEl.type = 'hidden';
+              fromNameEl.name = 'from_name';
+              form.appendChild(fromNameEl);
+            }
+            fromNameEl.value = name;
+
+            let senderContactEl = form.elements.namedItem('sender_contact');
+            if (!senderContactEl) {
+              senderContactEl = document.createElement('input');
+              senderContactEl.type = 'hidden';
+              senderContactEl.name = 'sender_contact';
+              form.appendChild(senderContactEl);
+            }
+            senderContactEl.value = email;
+
+            let replyToEl = form.elements.namedItem('reply_to');
+            if (!replyToEl) {
+              replyToEl = document.createElement('input');
+              replyToEl.type = 'hidden';
+              replyToEl.name = 'reply_to';
+              form.appendChild(replyToEl);
+            }
+            replyToEl.value = email;
+
+            const toNameEl = form.elements.namedItem('to_name');
+            if (toNameEl && 'value' in toNameEl && !String(toNameEl.value || '').trim()) {
+              toNameEl.value = 'Real Estate Team';
+            }
+
+            let bookingInquiryEl = form.elements.namedItem('booking_inquiry');
+            if (!bookingInquiryEl) {
+              bookingInquiryEl = document.createElement('input');
+              bookingInquiryEl.type = 'hidden';
+              bookingInquiryEl.name = 'booking_inquiry';
+              form.appendChild(bookingInquiryEl);
+            }
+            bookingInquiryEl.value = propertyTitle || 'Booking Request';
+
+            const messageEl = form.elements.namedItem('message');
+            const prevMessage = messageEl ? String(messageEl.value || '') : '';
+            if (messageEl) messageEl.value = fullMessage;
+
+            window.emailjs.sendForm(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, form)
+              .then(() => {
+                showBookingEmailFeedback(propertyId, 'ok', 'Email sent.', "We'll get back to you soon.");
+                if (messageEl) messageEl.value = prevMessage;
+              })
+              .catch((error) => {
+                const status = (error && typeof error.status !== 'undefined') ? String(error.status) : '';
+                const text = (error && error.text) ? String(error.text) : '';
+                const msg = (status || text) ? `EmailJS ${status} ${text}`.trim() : 'Please try again.';
+                showBookingEmailFeedback(propertyId, 'err', "Couldn't send.", msg);
+                if (messageEl) messageEl.value = prevMessage;
+              })
+              .finally(() => {
+                submitButtons.forEach((b) => { b.disabled = false; });
+              });
+
+            return false;
+          } catch (err) {
+            try {
+              const propertyId = btn?.getAttribute?.('data-property-id') || 'unknown';
+              showBookingEmailFeedback(propertyId, 'err', "Couldn't send.", String(err || 'Unknown error'));
+            } catch (_) {
+              // ignore
+            }
+            submitButtons.forEach((b) => { b.disabled = false; });
+            return false;
+          }
+        };
+
+        document.addEventListener('click', function (event) {
+          const btn = event.target.closest?.('[data-emailjs-booking-send],[data-booking-send-email]');
+          if (!btn) return;
+          if (window.sendBookingViaEmail) window.sendBookingViaEmail(btn);
+        });
+      })();
+    </script>
+
     <link rel="stylesheet" href="{% static 'css/tailwind.css' %}" />
   </head>
   <body hx-boost="true"
@@ -55,6 +298,7 @@
         hx-select="#page"
         hx-swap="outerHTML">
     <div id="page">
+      
       <header class="nav">
         <div class="nav-inner">
           <a class="brand" href="{% url 'home' %}">RealEstate</a>
@@ -65,17 +309,17 @@
               <span></span>
             </span>
           </button>
-          <nav class="nav-links w-full max-w-xs mx-auto p-4 bg-white shadow-lg rounded-lg md:max-w-none md:w-auto md:p-0 md:bg-transparent md:shadow-none md:rounded-none" id="nav-links">
+          <nav class="nav-links w-full p-4 bg-white shadow-lg rounded-lg md:w-auto md:p-0 md:bg-transparent md:shadow-none md:rounded-none" id="nav-links">
             <a class="link" href="{% url 'home' %}">Home</a>
             <a class="link" href="{% url 'services' %}">Services</a>
             <a class="link" href="{% url 'listings' %}">Listings</a>
             <a class="link" href="{% url 'agents' %}">Agents</a>
-            <a class="link" href="{% url 'contact' %}">Contact</a>
+            <a class="link" href="{% url 'contact' %}" hx-boost="false">Contact</a>
             {% if user.is_authenticated %}
               <a class="link" href="{% url 'password_change' %}">Change password</a>
-              <form method="post" action="{% url 'logout' %}" class="inline" hx-boost="false">
+              <form method="post" action="{% url 'logout' %}" class="inline md:inline block w-full" hx-boost="false">
                 {% csrf_token %}
-                <button type="submit" class="link link-button">Logout</button>
+                <button type="submit" class="link link-button w-full text-left">Logout</button>
               </form>
             {% else %}
               <a class="link" href="{% url 'login' %}">Login</a>
@@ -100,7 +344,7 @@
 
       <footer class="footer">
         <div class="footer-inner">
-          © {% now "Y" %} RealEstate. Built for speed.
+          © {% now "Y" %} RealEstate.
         </div>
       </footer>
     </div>
