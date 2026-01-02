@@ -20,7 +20,12 @@
         {% if prop.municipality %}<span class="muted">• {{ prop.municipality.name }}</span>{% endif %}
         <span class="muted">• {{ prop.images.all|length }} photos</span>
       </div>
-      {% if prop.address %}<div class="muted">{{ prop.address }}</div>{% endif %}
+      {% if prop.address %}
+        <div class="muted">
+          <a class="underline" target="_blank" rel="noopener noreferrer"
+             href="https://www.google.com/maps/search/?api=1&query={{ prop.address|urlencode }}">{{ prop.address }}</a>
+        </div>
+      {% endif %}
       {% if prop.description %}<div class="muted">{{ prop.description|truncatechars:140 }}</div>{% endif %}
     </div>
   </div>

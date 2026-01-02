@@ -14,7 +14,12 @@
         <span class="badge">{{ property.get_status_display }}</span>
         {% if property.price %}<span class="muted">${{ property.price }}</span>{% endif %}
         {% if property.municipality %}<span class="muted">• {{ property.municipality.name }}</span>{% endif %}
-        {% if property.address %}<span class="muted">• {{ property.address }}</span>{% endif %}
+        {% if property.address %}
+          <span class="muted">•
+            <a class="underline" target="_blank" rel="noopener noreferrer"
+               href="https://www.google.com/maps/search/?api=1&query={{ property.address|urlencode }}">{{ property.address }}</a>
+          </span>
+        {% endif %}
       </div>
     </div>
 
