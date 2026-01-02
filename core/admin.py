@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Agent, BookingRequest, ContactMessage, Municipality, Note, Property, PropertyImage, Service
+from .models import Agent, BookingRequest, ContactMessage, Municipality, Note, Property, PropertyImage, Service, ServiceImage
 
 
 @admin.register(Note)
@@ -61,3 +61,11 @@ class ServiceAdmin(admin.ModelAdmin):
     list_display = ("name", "active", "updated_at", "image")
     list_filter = ("active",)
     search_fields = ("name", "description")
+
+
+class ServiceImageInline(admin.TabularInline):
+    model = ServiceImage
+    extra = 1
+
+
+ServiceAdmin.inlines = [ServiceImageInline]

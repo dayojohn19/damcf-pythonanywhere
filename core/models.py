@@ -54,6 +54,18 @@ class Service(models.Model):
         return self.name
 
 
+class ServiceImage(models.Model):
+    service = models.ForeignKey(Service, on_delete=models.CASCADE, related_name="images")
+    image = models.URLField(max_length=2000)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self) -> str:
+        return f"Image for {self.service_id}"
+
+
 class Property(models.Model):
     class Status(models.TextChoices):
         FOR_SALE = "for_sale", "For sale"

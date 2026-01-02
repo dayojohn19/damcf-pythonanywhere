@@ -3,13 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}DAMCA Consultancy and Real Estate Services{% endblock %}</title>
+    <title>{% block title %}DAMCF Consultancy and Real Estate Services{% endblock %}</title>
 
-    <meta name="description" content="DAMCA Consultancy and Real Estate Services in Siargao. Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services." />
+    <meta name="description" content="DAMCF Consultancy and Real Estate Services in Siargao. Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services." />
     <meta name="robots" content="index, follow" />
 
-    <meta property="og:site_name" content="DAMCA Consultancy and Real Estate Services" />
-    <meta property="og:title" content="DAMCA Consultancy and Real Estate Services" />
+    <meta property="og:site_name" content="DAMCF Consultancy and Real Estate Services" />
+    <meta property="og:title" content="DAMCF Consultancy and Real Estate Services" />
     <meta property="og:description" content="Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services." />
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s" />
@@ -18,7 +18,7 @@
     <link rel="apple-touch-icon" href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s" />
 
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="DAMCA Consultancy and Real Estate Services" />
+    <meta name="twitter:title" content="DAMCF Consultancy and Real Estate Services" />
     <meta name="twitter:description" content="Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services." />
     <meta name="twitter:image" content="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s" />
 
@@ -26,7 +26,7 @@
       {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
-        "name": "DAMCA Consultancy and Real Estate Services",
+        "name": "DAMCF Consultancy and Real Estate Services",
         "description": "Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services.",
         "logo": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s",
         "image": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s",
@@ -217,12 +217,16 @@
 
           const messageEl = form.elements.namedItem('message');
           const bookingInquiryEl = form.elements.namedItem('booking_inquiry');
+          const requestedDateEl = form.elements.namedItem('requested_date');
+          const senderPhoneEl = form.elements.namedItem('sender_phone');
           const senderContactEl = form.elements.namedItem('sender_contact');
           const senderNameEl = form.elements.namedItem('from_name');
           const replyToEl = form.elements.namedItem('reply_to');
 
           const originalMessage = (messageEl && 'value' in messageEl) ? String(messageEl.value || '') : '';
           const bookingInquiry = (bookingInquiryEl && 'value' in bookingInquiryEl) ? String(bookingInquiryEl.value || '') : '';
+          const requestedDate = (requestedDateEl && 'value' in requestedDateEl) ? String(requestedDateEl.value || '') : '';
+          const senderPhone = (senderPhoneEl && 'value' in senderPhoneEl) ? String(senderPhoneEl.value || '') : '';
           const senderContact = (senderContactEl && 'value' in senderContactEl) ? String(senderContactEl.value || '') : '';
           const senderName = (senderNameEl && 'value' in senderNameEl) ? String(senderNameEl.value || '') : '';
 
@@ -232,8 +236,10 @@
             const fullMessage =
               `${originalMessage}\n\n` +
               (bookingInquiry ? `Inquiry: ${bookingInquiry}\n\n` : '') +
+              (requestedDate ? `Requested date: ${requestedDate}\n\n` : '') +
               `Contact me:\n${senderName}\n${senderContact}`;
-            messageEl.value = fullMessage;
+            const withPhone = senderPhone ? `${fullMessage}\nPhone/WhatsApp: ${senderPhone}` : fullMessage;
+            messageEl.value = withPhone;
           }
 
           window.emailjs.sendForm(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, form)
@@ -392,8 +398,34 @@
           if (!btn) return;
           if (window.sendBookingViaEmail) window.sendBookingViaEmail(btn);
         });
+
+        // SERVICES: simple per-card image next/prev (works with HTMX swaps)
+        document.addEventListener('click', function (event) {
+          const prevBtn = event.target.closest?.('[data-service-img-prev]');
+          const nextBtn = event.target.closest?.('[data-service-img-next]');
+          const btn = prevBtn || nextBtn;
+          if (!btn) return;
+
+          const card = btn.closest?.('[data-service-img-card]');
+          if (!card) return;
+
+          const items = Array.from(card.querySelectorAll?.('[data-service-img-item]') || []);
+          if (items.length < 2) return;
+
+          let currentIndex = items.findIndex((el) => !el.hidden);
+          if (currentIndex < 0) currentIndex = 0;
+
+          const delta = prevBtn ? -1 : 1;
+          let nextIndex = currentIndex + delta;
+          if (nextIndex < 0) nextIndex = items.length - 1;
+          if (nextIndex >= items.length) nextIndex = 0;
+
+          items.forEach((el, i) => { el.hidden = i !== nextIndex; });
+        });
       })();
     </script>
+
+    {% block head_extra %}{% endblock %}
 
     <link rel="stylesheet" href="{% static 'css/tailwind.css' %}" />
   </head>
@@ -409,7 +441,7 @@
         style="position: sticky;top: 0;background-color: white;left: 0; z-index: 2;" class="nav-inner">
           <a class="brand row items-center gap-2" href="{% url 'home' %}">
             <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s" alt="Isla Linaw Siargao" style="height: 3rem; width: auto;" loading="eager" data-no-watermark />
-            <span>DAMCA Consultancy and Real Estate Services</span>
+            <span>DAMCF Consultancy and Real Estate Services</span>
           </a>
           <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-links">
             <span class="nav-toggle-lines" aria-hidden="true">
@@ -455,7 +487,7 @@
           <div class="row justify-between items-start flex-wrap gap-3">
             <div>
               <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzOCC-sdOmK1bcMtxTKWxzabc-GPP28oYrDQ&s" alt="Isla Linaw Siargao" style="height: 5rem; width: auto; margin-bottom: 0.5rem;" loading="lazy" />
-              © {% now "Y" %} RealEstate.
+              © {% now "Y" %} DAMCF Consultancy and Real Estate Services.
             </div>
             <div>
               <div class="muted">Office address: Purok 3, General Luna Siargao, Surigao Del Norte</div>

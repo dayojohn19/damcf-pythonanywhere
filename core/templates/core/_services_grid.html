@@ -2,12 +2,50 @@
 
 <div id="services-grid" class="grid">
   {% for service in services %}
-    <div class="card">
-      {% if service.image %}
-        <div class="thumb">
-          <img src="{{ service.image|media_url }}" alt="{{ service.name }}" loading="lazy" />
-        </div>
-      {% endif %}
+    <div class="card" data-service-img-card>
+      {% with imgs=service.images.all %}
+        {% if imgs|length %}
+          <div class="thumb" data-service-img-wrap style="position: relative;">
+            {% for img in imgs %}
+              <div data-service-img-item {% if not forloop.first %}hidden{% endif %}>
+                <img
+                  src="{{ img.image|media_url }}"
+                  alt="{{ service.name }}"
+                  loading="lazy"
+                  data-service-img
+                />
+              </div>
+            {% endfor %}
+
+            {% if imgs|length > 1 %}
+              <button
+                type="button"
+                class="btn"
+                data-service-img-prev
+                aria-label="Previous image"
+                title="Previous"
+                style="position:absolute; left:0.5rem; top:50%; transform:translateY(-50%); padding:0.25rem 0.5rem; line-height:1;"
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                class="btn"
+                data-service-img-next
+                aria-label="Next image"
+                title="Next"
+                style="position:absolute; right:0.5rem; top:50%; transform:translateY(-50%); padding:0.25rem 0.5rem; line-height:1;"
+              >
+                ›
+              </button>
+            {% endif %}
+          </div>
+        {% elif service.image %}
+          <div class="thumb">
+            <img src="{{ service.image|media_url }}" alt="{{ service.name }}" loading="lazy" />
+          </div>
+        {% endif %}
+      {% endwith %}
       <div class="title">{{ service.name }}</div>
       {% if service.description %}
         <div class="muted mt-2">{{ service.description }}</div>

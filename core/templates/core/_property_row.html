@@ -32,15 +32,7 @@
 
   <div class="actions flex-wrap">
     <a class="btn" href="{% url 'property_detail' prop.id %}">View</a>
-    <button class="btn" type="button"
-            hx-get="{% url 'property_book' prop.id %}"
-            hx-target="#booking-{{ prop.id }}"
-          hx-swap="innerHTML"
-          hx-select="div"
-          hx-push-url="false"
-          hx-disinherit="*">
-      Book now
-    </button>
+    <a class="btn" href="{% url 'contact' %}?property={{ prop.id }}">Book now</a>
     {% if user.is_authenticated %}
       {% if user.is_superuser %}
         <form hx-post="{% url 'property_set_featured' prop.id %}"

@@ -17,7 +17,7 @@ from django.urls import reverse
 from django.http import JsonResponse
 from django.core.mail import EmailMessage
 
-from .models import Agent, BookingRequest, ContactMessage, Municipality, Note, Property, PropertyImage, Service
+from .models import Agent, BookingRequest, ContactMessage, Municipality, Note, Property, PropertyImage, Service, ServiceImage
 from pathlib import Path
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
@@ -122,7 +122,7 @@ def home(request: HttpRequest) -> HttpResponse:
 
 
 def services(request: HttpRequest) -> HttpResponse:
-    qs = Service.objects.all()
+    qs = Service.objects.prefetch_related("images").all()
     if not (request.user.is_authenticated and request.user.is_superuser):
         qs = qs.filter(active=True)
     return render(request, "core/services.html", {"services": qs})
@@ -378,6 +378,7 @@ def contact(request: HttpRequest) -> HttpResponse:
             "service": service,
             "name": prefill_name,
             "email": prefill_email,
+            "requested_date": prefill_requested_date,
         },
     )
 
@@ -410,16 +411,35 @@ def service_create(request: HttpRequest) -> HttpResponse:
     description = (request.POST.get("description") or "").strip()
     active = (request.POST.get("active") or "") == "on"
 
-    image_url = None
-    image_file = request.FILES.get("image")
-    if image_file is not None:
-        image_url = _upload_file_and_get_url(image_file, "services")
-
     if name:
-        Service.objects.update_or_create(
+        service, created = Service.objects.get_or_create(
             name=name,
-            defaults={"description": description, "active": active, "image": image_url},
+            defaults={"description": description, "active": active},
         )
+
+        if not created:
+            service.description = description
+            service.active = active
+            service.save(update_fields=["description", "active", "updated_at"])
+
+        image_files = list(request.FILES.getlist("images") or [])
+        legacy_image_file = request.FILES.get("image")
+        if not image_files and legacy_image_file is not None:
+            image_files = [legacy_image_file]
+
+        first_uploaded_url: str | None = None
+        for file_obj in image_files:
+            url = _upload_file_and_get_url(file_obj, "services")
+            if not url:
+                continue
+            ServiceImage.objects.create(service=service, image=url)
+            if first_uploaded_url is None:
+                first_uploaded_url = url
+
+        # Keep Service.image populated as a fallback/primary image.
+        if first_uploaded_url and not (service.image or "").strip():
+            service.image = first_uploaded_url
+            service.save(update_fields=["image", "updated_at"])
 
     if request.headers.get("HX-Request") == "true":
         return _services_grid_partial(request)
@@ -427,7 +447,7 @@ def service_create(request: HttpRequest) -> HttpResponse:
 
 
 def service_edit(request: HttpRequest, pk: int) -> HttpResponse:
-    service = get_object_or_404(Service, pk=pk)
+    service = get_object_or_404(Service.objects.prefetch_related("images"), pk=pk)
 
     if not (request.user.is_authenticated and request.user.is_superuser):
         return redirect("services")
@@ -440,12 +460,24 @@ def service_edit(request: HttpRequest, pk: int) -> HttpResponse:
         service.active = (request.POST.get("active") or "") == "on"
 
         update_fields = ["name", "description", "active", "updated_at"]
-        image_file = request.FILES.get("image")
-        if image_file is not None:
-            image_url = _upload_file_and_get_url(image_file, "services")
-            if image_url:
-                service.image = image_url
-                update_fields.append("image")
+
+        image_files = list(request.FILES.getlist("images") or [])
+        legacy_image_file = request.FILES.get("image")
+        if not image_files and legacy_image_file is not None:
+            image_files = [legacy_image_file]
+
+        first_uploaded_url: str | None = None
+        for file_obj in image_files:
+            url = _upload_file_and_get_url(file_obj, "services")
+            if not url:
+                continue
+            ServiceImage.objects.create(service=service, image=url)
+            if first_uploaded_url is None:
+                first_uploaded_url = url
+
+        if first_uploaded_url:
+            service.image = first_uploaded_url
+            update_fields.append("image")
 
         service.save(update_fields=update_fields)
         return redirect("services")
@@ -911,7 +943,7 @@ def _municipalities_list_partial(request: HttpRequest) -> HttpResponse:
 
 
 def _services_grid_partial(request: HttpRequest) -> HttpResponse:
-    qs = Service.objects.all()
+    qs = Service.objects.prefetch_related("images").all()
     if not (request.user.is_authenticated and request.user.is_superuser):
         qs = qs.filter(active=True)
     return render(request, "core/_services_grid.html", {"services": qs})

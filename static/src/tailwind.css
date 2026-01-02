@@ -59,6 +59,50 @@
   .footer { @apply border-t border-slate-200 mt-7; }
   .footer-inner { @apply max-w-[980px] mx-auto px-[22px] py-[18px] text-slate-500 text-sm; }
 
+  /* Luxury micro-interactions (no new colors/fonts) */
+  .card,
+  .btn,
+  button,
+  .link {
+    transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease, color 180ms ease, opacity 180ms ease;
+    will-change: transform;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: rgb(203 213 225 / var(--tw-border-opacity, 1));
+  }
+
+  .btn:hover,
+  button:hover {
+    transform: translateY(-1px);
+  }
+
+  .btn:active,
+  button:active,
+  .card:active {
+    transform: translateY(0px);
+  }
+
+  .card-link .thumb img {
+    transition: transform 450ms ease;
+  }
+
+  .card-link:hover .thumb img {
+    transform: scale(1.03);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card,
+    .btn,
+    button,
+    .link,
+    .card-link .thumb img {
+      transition: none !important;
+      transform: none !important;
+    }
+  }
+
   @media (max-width: 640px) {
     .container { @apply p-[18px]; }
     .nav-toggle { @apply inline-flex; }

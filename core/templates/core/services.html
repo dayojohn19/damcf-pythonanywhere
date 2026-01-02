@@ -2,6 +2,28 @@
 
 {% block title %}Services{% endblock %}
 
+{% block head_extra %}
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "OfferCatalog",
+      "name": "Services",
+      "itemListElement": [
+        {% for service in services %}
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "name": "{{ service.name|escapejs }}"{% if service.description %},
+              "description": "{{ service.description|striptags|escapejs }}"{% endif %}
+            }
+          }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }
+  </script>
+{% endblock %}
+
 {% block content %}
   <div>
     <h1 class="h1 mb-1.5">Services</h1>
@@ -20,7 +42,7 @@
         {% csrf_token %}
         <div class="row mb-2.5">
           <input type="text" name="name" placeholder="Name (required)" autocomplete="off" />
-          <input type="file" name="image" accept="image/*" />
+          <input type="file" name="images" accept="image/*" multiple />
           <label class="muted flex gap-2 items-center">
             <input type="checkbox" name="active" checked /> Active
           </label>

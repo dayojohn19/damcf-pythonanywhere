@@ -14,17 +14,27 @@
 
       <div class="row mb-2.5">
         <input type="text" name="name" value="{{ service.name }}" placeholder="Name" autocomplete="off" />
-        <input type="file" name="image" accept="image/*" />
+        <input type="file" name="images" accept="image/*" multiple />
         <label class="muted flex gap-2 items-center">
           <input type="checkbox" name="active" {% if service.active %}checked{% endif %} /> Active
         </label>
       </div>
 
-      {% if service.image %}
+      {% with imgs=service.images.all %}
+        {% if imgs|length %}
+          <div class="grid mb-2.5" style="grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));">
+            {% for img in imgs %}
+              <div class="thumb">
+                <img src="{{ img.image|media_url }}" alt="{{ service.name }}" loading="lazy" />
+              </div>
+            {% endfor %}
+          </div>
+        {% elif service.image %}
         <div class="thumb mb-2.5">
           <img src="{{ service.image|media_url }}" alt="{{ service.name }}" loading="lazy" />
         </div>
-      {% endif %}
+        {% endif %}
+      {% endwith %}
 
       <div class="mb-2.5">
         <textarea name="description" class="textarea" placeholder="Description (optional)">{{ service.description }}</textarea>

@@ -769,7 +769,7 @@ a {
   color: rgb(100 116 139 / var(--tw-text-opacity, 1));
 }
 
-input[type="text"], input[type="email"] {
+input[type="text"], input[type="email"], input[type="tel"], input[type="date"] {
   flex: 1 1 0%;
   border-radius: 0.75rem;
   border-width: 1px;
@@ -1023,6 +1023,50 @@ li {
     padding-bottom: 0.5rem;
   }
 
+
+/* Luxury micro-interactions (no new colors/fonts) */
+.card,
+.btn,
+button,
+.link {
+  transition: transform 180ms ease, background-color 180ms ease, border-color 180ms ease, color 180ms ease, opacity 180ms ease;
+  will-change: transform;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: rgb(203 213 225 / var(--tw-border-opacity, 1));
+}
+
+.btn:hover,
+button:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active,
+button:active,
+.card:active {
+  transform: translateY(0px);
+}
+
+.card-link .thumb img {
+  transition: transform 450ms ease;
+}
+
+.card-link:hover .thumb img {
+  transform: scale(1.03);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card,
+  .btn,
+  button,
+  .link,
+  .card-link .thumb img {
+    transition: none !important;
+    transform: none !important;
+  }
+}
   .nav-links .\!link {
     padding-top: 0.5rem;
     padding-bottom: 0.5rem;
