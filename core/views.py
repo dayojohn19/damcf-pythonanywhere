@@ -48,6 +48,10 @@ def _upload_file_and_get_url(file_obj, folder: str) -> str | None:
             print('Cant Save in Cloudinary')
             print(e)
 
+        # If Cloudinary is configured, do not silently fall back to local storage.
+        # This keeps DB URLs consistent (always Cloudinary) when running in production.
+        return None
+
     # Fallback: save to the configured Django storage and return a public URL.
     try:
         original_name = getattr(file_obj, "name", "upload") or "upload"
@@ -678,6 +682,8 @@ def property_create(request: HttpRequest) -> HttpResponse:
             url = _upload_file_and_get_url(uploaded, "properties")
             if url:
                 PropertyImage.objects.create(property=prop, image=url)
+            elif uploaded is not None:
+                messages.error(request, "Could not upload one of the images to Cloudinary. Please try again.")
 
     if request.headers.get("HX-Request") == "true":
         # return redirect("listings")
@@ -743,6 +749,8 @@ def property_edit(request: HttpRequest, pk: int) -> HttpResponse:
             url = _upload_file_and_get_url(uploaded, "properties")
             if url:
                 PropertyImage.objects.create(property=prop, image=url)
+            elif uploaded is not None:
+                messages.error(request, "Could not upload one of the images to Cloudinary. Please try again.")
 
         if request.headers.get("HX-Request") == "true":
             prop.refresh_from_db()
