@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Data Deletion Instructions - DAMCF REALTY & CONSULTANCY INC.{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1 class="h1">Data Deletion Instructions</h1>
+  <p class="muted">Last updated: January 2, 2026</p>
+
+  <div style="max-width: 800px; line-height: 1.6;">
+    <h2 class="h2 mt-6">Requesting Deletion of Your Data</h2>
+    <p>At DAMCF REALTY & CONSULTANCY INC., we respect your right to have your personal data deleted. If you would like to request the deletion of your personal information, please follow the instructions below.</p>
+
+    <h2 class="h2 mt-6">What Data We Collect</h2>
+    <p>We may collect the following information about you:</p>
+    <ul style="margin-left: 2rem; margin-top: 1rem;">
+      <li>Name and contact information (email address, phone number)</li>
+      <li>Messages and inquiries submitted through our contact form</li>
+      <li>Property booking requests and viewing appointments</li>
+      <li>Facebook user ID (if you interact with our Facebook app)</li>
+    </ul>
+
+    <h2 class="h2 mt-6">How to Request Data Deletion</h2>
+    <p>To request deletion of your personal data, please contact us using any of the following methods:</p>
+
+    <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+      <h3 class="font-bold mb-2">📧 Email Request</h3>
+      <p>Send an email to: <a href="mailto:damcfrealtyinc@gmail.com" class="underline">damcfrealtyinc@gmail.com</a></p>
+      <p class="muted mt-2">Subject: Data Deletion Request</p>
+      <p class="muted">Include: Your name, email address, and phone number (if applicable)</p>
+    </div>
+
+    <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+      <h3 class="font-bold mb-2">📞 Phone Request</h3>
+      <p>Call us at: <a href="tel:+639300157769" class="underline">+639300157769</a></p>
+      <p class="muted mt-2">Our team will assist you with your data deletion request</p>
+    </div>
+
+    <div class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+      <h3 class="font-bold mb-2">📍 In-Person Request</h3>
+      <p>Visit our office at:</p>
+      <p class="muted">Purok 3, General Luna Siargao, Surigao Del Norte</p>
+    </div>
+
+    <h2 class="h2 mt-6">Facebook Data Deletion</h2>
+    <p>If you accessed our services through Facebook and want to delete data associated with our Facebook app:</p>
+    <ol style="margin-left: 2rem; margin-top: 1rem; list-style-type: decimal;">
+      <li>Go to your Facebook Settings & Privacy</li>
+      <li>Click on "Settings"</li>
+      <li>Go to "Apps and Websites"</li>
+      <li>Find "DAMCF REALTY" in the list</li>
+      <li>Click "Remove" to revoke access and delete associated data</li>
+    </ol>
+    <p class="mt-4">Alternatively, you can request deletion by contacting us directly using the methods above.</p>
+
+    <h2 class="h2 mt-6">What Information We Need</h2>
+    <p>To process your data deletion request, please provide:</p>
+    <ul style="margin-left: 2rem; margin-top: 1rem;">
+      <li>Your full name</li>
+      <li>Email address or phone number you used to contact us</li>
+      <li>Any other information that helps us identify your records</li>
+      <li>Preferred method of confirmation (email or phone)</li>
+    </ul>
+
+    <h2 class="h2 mt-6">Processing Time</h2>
+    <p>We will process your data deletion request within <strong>30 days</strong> of receiving it. You will receive a confirmation once your data has been deleted from our systems.</p>
+
+    <h2 class="h2 mt-6">Data We May Retain</h2>
+    <p>Please note that we may retain certain information if required by law or for legitimate business purposes, such as:</p>
+    <ul style="margin-left: 2rem; margin-top: 1rem;">
+      <li>Records required for tax or legal compliance</li>
+      <li>Information necessary to resolve disputes or enforce agreements</li>
+      <li>Backup copies for a limited period before permanent deletion</li>
+    </ul>
+
+    <h2 class="h2 mt-6">Questions?</h2>
+    <p>If you have any questions about data deletion or our privacy practices, please contact us:</p>
+    <div style="margin-left: 2rem; margin-top: 1rem;">
+      <p><strong>DAMCF REALTY & CONSULTANCY INC.</strong></p>
+      <p>Email: <a href="mailto:damcfrealtyinc@gmail.com" class="underline">damcfrealtyinc@gmail.com</a></p>
+      <p>Phone: <a href="tel:+639300157769" class="underline">+639300157769</a></p>
+    </div>
+
+    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <p><strong>Privacy Policy:</strong> For more information about how we handle your data, please read our <a href="{% url 'privacy_policy' %}" class="underline">Privacy Policy</a>.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

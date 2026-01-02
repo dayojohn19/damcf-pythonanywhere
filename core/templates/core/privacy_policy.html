@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Privacy Policy - DAMCF REALTY & CONSULTANCY INC.{% endblock %}
+
+{% block content %}
+<div class="card">
+  <h1 class="h1">Privacy Policy</h1>
+  <p class="muted">Last updated: January 2, 2026</p>
+
+  <div style="max-width: 800px; line-height: 1.6;">
+    <h2 class="h2 mt-6">1. Information We Collect</h2>
+    <p>DAMCF REALTY & CONSULTANCY INC. ("we", "our", or "us") collects information that you provide directly to us when you:</p>
+    <ul style="margin-left: 2rem; margin-top: 1rem;">
+      <li>Submit inquiries through our contact form</li>
+      <li>Request property viewings or information</li>
+      <li>Book appointments</li>
+      <li>Interact with our Facebook page or app</li>
+    </ul>
+
+    <p class="mt-4">The types of information we may collect include:</p>
+    <ul style="margin-left: 2rem; margin-top: 1rem;">
+      <li>Name and contact information (email address, phone number)</li>
+      <li>Property preferences and requirements</li>
+      <li>Messages and communications with us</li>
+      <li>Facebook user ID (when you interact via Facebook)</li>
+    </ul>
+
+    <h2 class="h2 mt-6">2. How We Use Your Information</h2>
+    <p>We use the information we collect to:</p>
+    <ul style="margin-left: 2rem; margin-top: 1rem;">
+      <li>Respond to your inquiries and requests</li>
+      <li>Schedule property viewings and appointments</li>
+      <li>Provide information about properties and services</li>
+      <li>Communicate with you about our services</li>
+      <li>Improve our website and services</li>
+      <li>Post property listings on our Facebook page (when applicable)</li>
+    </ul>
+
+    <h2 class="h2 mt-6">3. Facebook Integration</h2>
+    <p>Our website integrates with Facebook to automatically share new property listings on our Facebook page. When you interact with our Facebook app or page:</p>
+    <ul style="margin-left: 2rem; margin-top: 1rem;">
+      <li>We may access your public profile information (name, profile picture)</li>
+      <li>We do not store or use your Facebook data beyond what's necessary for the integration</li>
+      <li>You can revoke our app's access at any time through your Facebook settings</li>
+    </ul>
+
+    <h2 class="h2 mt-6">4. Information Sharing</h2>
+    <p>We do not sell, trade, or rent your personal information to third parties. We may share your information only in the following circumstances:</p>
+    <ul style="margin-left: 2rem; margin-top: 1rem;">
+      <li>With your consent</li>
+      <li>To comply with legal obligations</li>
+      <li>To protect our rights and property</li>
+      <li>With service providers who assist in our operations (e.g., email services, hosting)</li>
+    </ul>
+
+    <h2 class="h2 mt-6">5. Data Security</h2>
+    <p>We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
+
+    <h2 class="h2 mt-6">6. Your Rights</h2>
+    <p>You have the right to:</p>
+    <ul style="margin-left: 2rem; margin-top: 1rem;">
+      <li>Access your personal information</li>
+      <li>Correct inaccurate information</li>
+      <li>Request deletion of your information</li>
+      <li>Object to processing of your information</li>
+      <li>Withdraw consent at any time</li>
+    </ul>
+
+    <h2 class="h2 mt-6">7. Data Retention</h2>
+    <p>We retain your personal information only for as long as necessary to fulfill the purposes outlined in this privacy policy, unless a longer retention period is required by law.</p>
+
+    <h2 class="h2 mt-6">8. Third-Party Services</h2>
+    <p>Our website may contain links to third-party websites or services (including Facebook). We are not responsible for the privacy practices of these third parties.</p>
+
+    <h2 class="h2 mt-6">9. Changes to This Policy</h2>
+    <p>We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page with an updated "Last updated" date.</p>
+
+    <h2 class="h2 mt-6">10. Contact Us</h2>
+    <p>If you have any questions about this privacy policy or our data practices, please contact us:</p>
+    <div style="margin-left: 2rem; margin-top: 1rem;">
+      <p><strong>DAMCF REALTY & CONSULTANCY INC.</strong></p>
+      <p>Email: damcfrealtyinc@gmail.com</p>
+      <p>Phone: +639300157769</p>
+      <p>Address: Purok 3, General Luna Siargao, Surigao Del Norte</p>
+    </div>
+
+    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+      <p><strong>Data Deletion:</strong> To request deletion of your data, please visit our <a href="{% url 'data_deletion' %}" class="underline">Data Deletion page</a>.</p>
+    </div>
+  </div>
+</div>
+{% endblock %}

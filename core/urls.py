@@ -15,6 +15,11 @@ urlpatterns = [
     path("agents/", views.agents, name="agents"),
     path("municipalities/", views.municipalities, name="municipalities"),
     path("contact/", views.contact, name="contact"),
+    
+    # Legal pages for Facebook App
+    path("privacy-policy/", views.privacy_policy, name="privacy_policy"),
+    path("data-deletion/", views.data_deletion, name="data_deletion"),
+    path("terms-of-service/", views.terms_of_service, name="terms_of_service"),
 
     # CRUD endpoints
     path("listings/create/", views.property_create, name="property_create"),

@@ -947,3 +947,18 @@ def _services_grid_partial(request: HttpRequest) -> HttpResponse:
     if not (request.user.is_authenticated and request.user.is_superuser):
         qs = qs.filter(active=True)
     return render(request, "core/_services_grid.html", {"services": qs})
+
+
+def privacy_policy(request: HttpRequest) -> HttpResponse:
+    """Privacy Policy page required by Facebook App."""
+    return render(request, "core/privacy_policy.html")
+
+
+def data_deletion(request: HttpRequest) -> HttpResponse:
+    """Data Deletion Instructions page required by Facebook App."""
+    return render(request, "core/data_deletion.html")
+
+
+def terms_of_service(request: HttpRequest) -> HttpResponse:
+    """Terms of Service page."""
+    return render(request, "core/terms_of_service.html")
