@@ -975,3 +975,19 @@ def data_deletion(request: HttpRequest) -> HttpResponse:
 def terms_of_service(request: HttpRequest) -> HttpResponse:
     """Terms of Service page."""
     return render(request, "core/terms_of_service.html")
+
+
+def robots_txt(request: HttpRequest) -> HttpResponse:
+    """Generate robots.txt dynamically."""
+    site_url = request.build_absolute_uri('/')
+    sitemap_url = request.build_absolute_uri(reverse('django.contrib.sitemaps.views.sitemap'))
+    
+    content = f"""User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /accounts/
+Disallow: /media/agents/
+
+Sitemap: {sitemap_url}
+"""
+    return HttpResponse(content, content_type="text/plain")

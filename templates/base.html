@@ -5,45 +5,74 @@
     <meta name="facebook-domain-verification" content="fks3ngi7i2m61ia4hiyo62bvq8g6ou" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{% block title %}DAMCF Realty Incorporated{% endblock %}</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <!-- Primary Meta Tags -->
+    <title>{% block title %}DAMCF Realty Incorporated - Real Estate in Siargao{% endblock %}</title>
+    <meta name="title" content="{% block meta_title %}DAMCF Realty Incorporated - Real Estate in Siargao{% endblock %}" />
+    <meta name="description" content="{% block meta_description %}DAMCF Realty Incorporated in Siargao. Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services.{% endblock %}" />
+    <meta name="keywords" content="{% block meta_keywords %}Siargao real estate, property for sale Siargao, property management, business consultancy, real estate Philippines, General Luna properties, Siargao land for sale, Siargao house for rent{% endblock %}" />
+    <meta name="author" content="DAMCF Realty Incorporated" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <link rel="canonical" href="{% block canonical_url %}https://damcfrealty-and-businessconsultancy.com{{ request.path }}{% endblock %}" />
 
-    <meta name="description" content="DAMCF Realty Incorporated in Siargao. Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services." />
-    <meta name="robots" content="index, follow" />
-
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}" />
+    <meta property="og:url" content="https://damcfrealty-and-businessconsultancy.com{{ request.path }}" />
     <meta property="og:site_name" content="DAMCF Realty Incorporated" />
-    <meta property="og:title" content="DAMCF Realty Incorporated" />
-    <meta property="og:description" content="Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png" />
+    <meta property="og:title" content="{% block og_title %}DAMCF Realty Incorporated - Real Estate in Siargao{% endblock %}" />
+    <meta property="og:description" content="{% block og_description %}Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services.{% endblock %}" />
+    <meta property="og:image" content="{% block og_image %}https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png{% endblock %}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="en_US" />
 
-    <link rel="icon" href="https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png" />
-    <link rel="apple-touch-icon" href="https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png" />
-
+    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="DAMCF Realty Incorporated" />
-    <meta name="twitter:description" content="Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services." />
-    <meta name="twitter:image" content="https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png" />
+    <meta name="twitter:url" content="https://damcfrealty-and-businessconsultancy.com{{ request.path }}" />
+    <meta name="twitter:title" content="{% block twitter_title %}DAMCF Realty Incorporated - Real Estate in Siargao{% endblock %}" />
+    <meta name="twitter:description" content="{% block twitter_description %}Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services.{% endblock %}" />
+    <meta name="twitter:image" content="{% block twitter_image %}https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png{% endblock %}" />
 
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png" />
+    <link rel="apple-touch-icon" href="https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png" />
+    <meta name="theme-color" content="#ffffff" />
+
+    <!-- Preconnect to external domains for better performance -->
+    <link rel="preconnect" href="https://unpkg.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
+
+    <!-- Structured Data - Base Schema -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
-        "@type": "LocalBusiness",
+        "@type": "RealEstateAgent",
         "name": "DAMCF Realty Incorporated",
         "description": "Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services.",
         "logo": "https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png",
         "image": "https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png",
         "telephone": "+639980993376",
+        "url": "https://damcfrealty-and-businessconsultancy.com",
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "Purok 3",
           "addressLocality": "General Luna",
           "addressRegion": "Surigao del Norte",
           "addressCountry": "PH"
-        }
+        },
+        "areaServed": {
+          "@type": "City",
+          "name": "Siargao Island"
+        },
+        "priceRange": "$$"
       }
     </script>
+    {% block extra_schema %}{% endblock %}
 
-    <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+    <!-- Performance: Defer non-critical scripts -->
+    <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
     <meta name="csrf-token" content="{{ csrf_token }}" />
 
     <style>

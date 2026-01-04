@@ -2,7 +2,54 @@
 
 {% load cloudinary_extras humanize %}
 
-{% block title %}{{ property.title }}{% endblock %}
+{% block title %}{{ property.title }} - {{ property.municipality.name|default:"Siargao" }} | DAMCF Realty{% endblock %}
+
+{% block meta_description %}{{ property.description|default:"Property for sale in Siargao"|truncatewords:30 }}{% endblock %}
+
+{% block meta_keywords %}{{ property.title }}, Siargao property, {{ property.municipality.name|default:"" }} real estate, property for {{ property.get_status_display|lower }}, Siargao{% endblock %}
+
+{% block og_type %}product{% endblock %}
+{% block og_title %}{{ property.title }} - ₱{{ property.price|intcomma|default:"Contact for price" }}{% endblock %}
+{% block og_description %}{{ property.description|default:"Property for sale in Siargao"|truncatewords:30 }}{% endblock %}
+{% block og_image %}{% if property.images.first %}{{ property.images.first.image|media_url }}{% else %}https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png{% endif %}{% endblock %}
+
+{% block extra_schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Product",
+  "name": "{{ property.title|escapejs }}",
+  "description": "{{ property.description|escapejs|default:"Property listing in Siargao" }}",
+  {% if property.images.first %}
+  "image": "{{ property.images.first.image|media_url }}",
+  {% endif %}
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "PHP",
+    {% if property.price %}
+    "price": "{{ property.price }}",
+    {% endif %}
+    "availability": "{% if property.status == 'sold' %}https://schema.org/OutOfStock{% else %}https://schema.org/InStock{% endif %}",
+    "itemCondition": "https://schema.org/UsedCondition",
+    "seller": {
+      "@type": "RealEstateAgent",
+      "name": "DAMCF Realty Incorporated"
+    }
+  },
+  "address": {
+    "@type": "PostalAddress",
+    {% if property.address %}
+    "streetAddress": "{{ property.address|escapejs }}",
+    {% endif %}
+    {% if property.municipality %}
+    "addressLocality": "{{ property.municipality.name|escapejs }}",
+    {% endif %}
+    "addressRegion": "Surigao del Norte",
+    "addressCountry": "PH"
+  }
+}
+</script>
+{% endblock %}
 
 {% block content %}
   <p class="muted mt-0"><a class="link" href="{% url 'listings' %}">← Back to listings</a></p>
