@@ -20,6 +20,11 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("accounts/logout/", core_views.logout_view, name="logout"),
     path("accounts/", include("django.contrib.auth.urls")),
+    path(
+        "google48bcdfe5ffff5f5a.html",
+        TemplateView.as_view(template_name="core/google48bcdfe5ffff5f5a.html"),
+        name="google_site_verification",
+    ),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path('robots.txt', core_views.robots_txt, name='robots_txt'),
     path("", include("core.urls")),
