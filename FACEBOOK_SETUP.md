@@ -7,46 +7,79 @@ This application automatically posts new property listings to your Facebook Page
 ### 1. Create a Facebook App
 
 1. Go to [Facebook Developers](https://developers.facebook.com/)
-2. Create a new app or use an existing one
-3. Add the "Facebook Login" product to your app
+2. Click "My Apps" → "Create App"
+3. Choose "Business" as the app type
+4. Fill in app details and create
 
-### 2. Get a Page Access Token
+### 2. Add Required Permissions to Your App
 
-1. Go to [Facebook Graph API Explorer](https://developers.facebook.com/tools/explorer/)
-2. Select your app from the dropdown
+Before getting tokens, you need to add permissions to your app:
+
+1. In your app dashboard, go to **"App Review"** → **"Permissions and Features"**
+2. Search for and request these permissions (click "Request" next to each):
+   - `pages_manage_posts` - Required to post to your page
+   - `pages_read_engagement` - Optional, for analytics
+3. Some permissions are granted immediately for your own pages
+
+**OR use the simpler approach:**
+
+1. Go to your app settings
+2. Under **"Use cases"**, add **"Manage business extensions"** or **"Page management"**
+3. This will give you the necessary permissions for pages you manage
+
+### 3. Get Page Access Token
+
+**Step 1: Generate User Token with Page Permissions**
+
+1. Go to [Graph API Explorer](https://developers.facebook.com/tools/explorer/)
+2. Select your app from the "Meta App" dropdown
 3. Click "Generate Access Token"
-4. Grant permissions:
-   - `pages_show_list`
-   - `pages_read_engagement`
-   - `pages_manage_posts`
-5. Copy the short-lived token
+4. In the popup, select your Facebook Page
+5. Click "Done" - you now have a user token with page access
 
-### 3. Convert to Long-Lived Token
+**Step 2: Get the Permanent Page Token**
 
-Use this URL (replace `YOUR_APP_ID`, `YOUR_APP_SECRET`, and `SHORT_LIVED_TOKEN`):
+1. In Graph API Explorer, change the query to: `me/accounts`
+2. Click "Submit"
+3. You'll see a JSON response with your pages
+4. Find your page in the `data` array
+5. Copy the `access_token` value for your page (NOT the one at the top)
+6. Copy the `id` value - this is your PAGE ID
 
+**Example response:**
+```json
+{
+  "data": [
+    {
+      "access_token": "EAABsbCS...ZD",  ← This is your PAGE ACCESS TOKEN (never expires!)
+      "category": "Real Estate",
+      "name": "Your Page Name",
+      "id": "123456789",  ← This is your PAGE ID
+      "tasks": ["ADVERTISE", "ANALYZE", "CREATE_CONTENT", "MODERATE", "MANAGE"]
+    }
+  ]
+}
 ```
-https://graph.facebook.com/v18.0/oauth/access_token?grant_type=fb_exchange_token&client_id=YOUR_APP_ID&client_secret=YOUR_APP_SECRET&fb_exchange_token=SHORT_LIVED_TOKEN
-```
 
-This returns a long-lived User Access Token (valid for 60 days).
+**Important:** The `access_token` inside the page object is a permanent page access token that never expires!
 
-### 4. Get a Page Access Token (Never Expires)
+### 4. Get Your Page ID
 
-Use the long-lived user token to get a page token:
+If you didn't get it from step 3, your Page ID is shown in the `me/accounts` response. 
 
-```
-https://graph.facebook.com/v18.0/me/accounts?access_token=LONG_LIVED_USER_TOKEN
-```
+You can also find it here:
+- Visit your Facebook Page → "About" section → scroll to find "Page ID"
 
-Find your page in the response and copy its `access_token`. This token never expires (as long as the app remains active).
+### 5. Test Your Token (Important!)
 
-### 5. Get Your Page ID
-
-Your page ID is in the same response from step 4, or:
-- Go to your Facebook Page
-- Click "About"
-- Scroll down to find "Page ID"
+1. Go to [Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken/)
+2. Paste your Page Access Token (from the `me/accounts` response)
+3. Click "Debug"
+4. Check that:
+   - Type is "Page Access Token"
+   - It shows "Expires: Never" 
+   - Your page name appears in the info
+   - Scopes include posting permissions
 
 ### 6. Set Environment Variables on Heroku
 
@@ -62,25 +95,47 @@ Create a new property listing through your admin panel or website. It should aut
 ## What Gets Posted
 
 When a new property is created, the system posts:
+- Property image (first image)
 - Property title
-- Location (municipality)
-- Address (if available)
-- Price (if available)
+- Price (formatted with peso sign)
+- Location (municipality and address)
 - Status (For Sale, For Rent, etc.)
-- Description (truncated if long)
+- Description (full text, up to 500 characters)
+- Contact information
 - Direct link to property details
-- First property image (if available)
 - Relevant hashtags
 
 ## Troubleshooting
 
+### Token Issues
+- **Token expired**: Page tokens from the Access Token Tool should never expire
+- **Invalid token**: Make sure you copied the entire token without spaces
+- **Wrong token type**: Use the PAGE token, not the user token
+
+### Permission Issues
+- Ensure you're an admin of the Facebook Page
+- If you don't see your page, you may need to add it to your Business Manager first
+
+### Posting Issues
 - Check Heroku logs: `heroku logs --tail`
-- Ensure your Page Access Token has the correct permissions
-- Make sure the token hasn't expired (page tokens shouldn't expire)
-- Test your token at [Facebook Access Token Debugger](https://developers.facebook.com/tools/debug/accesstoken/)
+- Look for "Successfully posted property..." messages
+- If you see errors, check the error message in the logs
+
+### Common Errors
+- **"Invalid OAuth access token"**: Token is wrong or expired
+- **"Permissions error"**: You're not an admin of the page
+- **"Image URL error"**: Make sure property has uploaded images to Cloudinary
 
 ## Security Notes
 
 - Never commit access tokens to your repository
 - Always use environment variables for sensitive credentials
 - Regularly check token validity in Facebook Developer Console
+- Tokens are tied to your app - if you delete the app, tokens become invalid
+
+## Support
+
+If you need help, check:
+- [Facebook Platform Documentation](https://developers.facebook.com/docs/)
+- [Facebook Community Forum](https://developers.facebook.com/community/)
+- Contact: damcfrealtyinc@gmail.com
