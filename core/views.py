@@ -279,19 +279,32 @@ def contact(request: HttpRequest) -> HttpResponse:
         email = (request.POST.get("email") or "").strip()
         message = (request.POST.get("message") or "").strip()
 
+        service_post = (
+            (request.POST.get("service") or "").strip()
+            or (request.POST.get("subject") or "").strip()
+            or (request.POST.get("booking_inquiry") or "").strip()
+        )
+        effective_service = service_post or service
+        save_only = (request.POST.get("save_only") or "").strip() == "1"
+
         if name and email and message:
             ContactMessage.objects.create(name=name, email=email, message=message)
 
+            if save_only:
+                if _wants_json():
+                    return JsonResponse({"ok": True})
+                return render(request, "core/contact.html", {"success": True})
+
             # Send email via SMTP (configured in settings).
             subject = f"New contact message from {name}"
-            if service:
-                subject = f"New booking/contact: {service} — {name}"
+            if effective_service:
+                subject = f"New booking/contact: {effective_service}  {name}"
             body_lines = [
                 f"Name: {name}",
                 f"Email: {email}",
             ]
-            if service:
-                body_lines.append(f"Service: {service}")
+            if effective_service:
+                body_lines.append(f"Service: {effective_service}")
             body_lines.append("")
             body_lines.append(message)
 
@@ -337,7 +350,7 @@ def contact(request: HttpRequest) -> HttpResponse:
                 "name": name,
                 "email": email,
                 "message": message,
-                "service": service,
+                "service": effective_service,
             },
         )
 
