@@ -9,7 +9,7 @@ class StaticViewSitemap(Sitemap):
     changefreq = "monthly"
 
     def items(self):
-        return ['core:home', 'core:listings', 'core:agents', 'core:services', 'core:municipalities', 'core:contact']
+        return ["home", "listings", "agents", "services", "municipalities", "contact"]
 
     def location(self, item):
         return reverse(item)
@@ -27,7 +27,7 @@ class PropertySitemap(Sitemap):
         return obj.updated_at
 
     def location(self, obj):
-        return reverse('core:property_detail', args=[obj.pk])
+        return reverse("property_detail", args=[obj.pk])
 
 
 class MunicipalitySitemap(Sitemap):
@@ -58,4 +58,4 @@ class ServiceSitemap(Sitemap):
         return obj.updated_at
 
     def location(self, obj):
-        return reverse('core:services')
+        return reverse("services")
