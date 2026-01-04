@@ -2,6 +2,7 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <meta name="google-site-verification" content="HAHYEcZtV-VYibVTm7qv1hSC0Q5aD8cAxFAThXLOdSs" />
     <meta name="facebook-domain-verification" content="fks3ngi7i2m61ia4hiyo62bvq8g6ou" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -14,11 +15,11 @@
     <meta name="keywords" content="{% block meta_keywords %}Siargao real estate, property for sale Siargao, property management, business consultancy, real estate Philippines, General Luna properties, Siargao land for sale, Siargao house for rent{% endblock %}" />
     <meta name="author" content="DAMCF Realty Incorporated" />
     <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
-    <link rel="canonical" href="{% block canonical_url %}https://damcfrealty-and-businessconsultancy.com{{ request.path }}{% endblock %}" />
+    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="{% block og_type %}website{% endblock %}" />
-    <meta property="og:url" content="https://damcfrealty-and-businessconsultancy.com{{ request.path }}" />
+    <meta property="og:url" content="{{ request.build_absolute_uri }}" />
     <meta property="og:site_name" content="DAMCF Realty Incorporated" />
     <meta property="og:title" content="{% block og_title %}DAMCF Realty Incorporated - Real Estate in Siargao{% endblock %}" />
     <meta property="og:description" content="{% block og_description %}Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services.{% endblock %}" />
@@ -29,7 +30,7 @@
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://damcfrealty-and-businessconsultancy.com{{ request.path }}" />
+    <meta name="twitter:url" content="{{ request.build_absolute_uri }}" />
     <meta name="twitter:title" content="{% block twitter_title %}DAMCF Realty Incorporated - Real Estate in Siargao{% endblock %}" />
     <meta name="twitter:description" content="{% block twitter_description %}Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services.{% endblock %}" />
     <meta name="twitter:image" content="{% block twitter_image %}https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png{% endblock %}" />
@@ -50,11 +51,11 @@
         "@context": "https://schema.org",
         "@type": "RealEstateAgent",
         "name": "DAMCF Realty Incorporated",
-        "description": "Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services.",
+        "description": "Real estate sales and property management in siargao island philippines, business registration and maintenance consultancy, registration assistance, and related services.",
         "logo": "https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png",
         "image": "https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png",
         "telephone": "+639980993376",
-        "url": "https://damcfrealty-and-businessconsultancy.com",
+        "url": "{{ request.build_absolute_uri|cut:request.get_full_path }}",
         "address": {
           "@type": "PostalAddress",
           "streetAddress": "Purok 3",

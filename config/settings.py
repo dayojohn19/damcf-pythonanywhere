@@ -14,6 +14,11 @@ def _env_bool(value: str | None, default: bool = False) -> bool:
     return value.strip().lower() in {"1", "true", "t", "yes", "y", "on"}
 
 
+def _env_list(name: str) -> list[str]:
+    raw = os.environ.get(name, "")
+    return [item.strip() for item in raw.split(",") if item.strip()]
+
+
 _secret_key_file = BASE_DIR / ".secret_key"
 if _secret_key_file.exists():
     _file_secret_key = _secret_key_file.read_text().strip()
@@ -31,17 +36,41 @@ SECRET_KEY = os.environ.get("SECRET_KEY") or _file_secret_key
 # Default to DEBUG=False on Heroku (DYNO env var is set).
 DEBUG = _env_bool(os.environ.get("DEBUG"), default=not bool(os.environ.get("DYNO")))
 
-ALLOWED_HOSTS = ["*"]
+# Heroku-friendly host/origin configuration.
+# Recommended in Heroku:
+#   heroku config:set ALLOWED_HOSTS=your-app.herokuapp.com,your-custom-domain.com
+#   heroku config:set CSRF_TRUSTED_ORIGINS=https://your-app.herokuapp.com,https://your-custom-domain.com
+ALLOWED_HOSTS = _env_list("ALLOWED_HOSTS")
+if not ALLOWED_HOSTS:
+    if os.environ.get("DYNO") and not DEBUG:
+        # Allow the Heroku app domain (still recommend setting ALLOWED_HOSTS explicitly).
+        ALLOWED_HOSTS = [".herokuapp.com"]
+    else:
+        ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
+
+_site_url = (os.environ.get("SITE_URL") or "").strip().rstrip("/")
+if _site_url:
+    try:
+        parsed = urlparse(_site_url)
+        if parsed.hostname:
+            if parsed.hostname not in ALLOWED_HOSTS and (".herokuapp.com" not in ALLOWED_HOSTS):
+                ALLOWED_HOSTS.append(parsed.hostname)
+    except Exception:
+        pass
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
 
-CSRF_TRUSTED_ORIGINS = [
-    "https://damcfrealty-and-businessconsultancy.com",
-    "http://damcfrealty-and-businessconsultancy.com",
-    "https://www.damcfrealty-and-businessconsultancy.com",
-    "http://www.damcfrealty-and-businessconsultancy.com",
-]
-# CSRF_TRUSTED_ORIGINS = [o for o in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",") if o]
+CSRF_TRUSTED_ORIGINS = _env_list("CSRF_TRUSTED_ORIGINS")
+if _site_url:
+    try:
+        parsed = urlparse(_site_url)
+        if parsed.scheme and parsed.netloc:
+            origin = f"{parsed.scheme}://{parsed.netloc}"
+            if origin not in CSRF_TRUSTED_ORIGINS:
+                CSRF_TRUSTED_ORIGINS.append(origin)
+    except Exception:
+        pass
 
 INSTALLED_APPS = [
     "django.contrib.admin",
