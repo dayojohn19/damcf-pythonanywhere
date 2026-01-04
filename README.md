@@ -23,6 +23,10 @@ Open http://127.0.0.1:8000/
   - `ALLOWED_HOSTS=<your-app>.herokuapp.com`
   - `CSRF_TRUSTED_ORIGINS=https://<your-app>.herokuapp.com`
   - `SECURE_SSL_REDIRECT=true`
+  - Optional (Facebook auto-posting for new listings):
+    - `SITE_URL=https://<your-domain>`
+    - `FACEBOOK_PAGE_ID=<your page id>`
+    - `FACEBOOK_PAGE_ACCESS_TOKEN=<long-lived page access token>`
 - Add the Heroku Postgres addon, which provides `DATABASE_URL`.
 
 Procfile is included:

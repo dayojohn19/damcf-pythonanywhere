@@ -2,7 +2,6 @@ import os
 import requests
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from django.conf import settings
 from .models import Property
 
 
@@ -60,10 +59,12 @@ def post_to_facebook(property_instance):
     message_parts.append("📧 damcfrealtyinc@gmail.com")
     message_parts.append("")
     
-    # Add website link
-    property_url = f"https://damcfrealty-and-businessconsultancy.com/property/{property_instance.id}/"
-    message_parts.append(f"🔗 View full details: {property_url}")
-    message_parts.append("")
+    # Add website link (needs absolute URL; set SITE_URL in env)
+    site_url = (os.environ.get("SITE_URL") or "").strip().rstrip("/")
+    if site_url:
+        property_url = f"{site_url}/listings/{property_instance.id}/"
+        message_parts.append(f"🔗 View full details: {property_url}")
+        message_parts.append("")
     
     # Hashtags
     message_parts.append("#DAMCFRealty #RealEstate #Siargao #PropertyListing")
