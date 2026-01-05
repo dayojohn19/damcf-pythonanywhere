@@ -40,8 +40,8 @@
             hx-encoding="multipart/form-data"
             enctype="multipart/form-data">
         {% csrf_token %}
-        <div class="row mb-2.5">
-          <input type="text" name="name" placeholder="Name (required)" autocomplete="off" />
+        <div class="column mb-2.5">
+          <input class="mb-2.5" type="text" name="name" placeholder="Name (required)" autocomplete="off" />
           <input type="file" name="images" accept="image/*" multiple />
           <label class="muted flex gap-2 items-center">
             <input type="checkbox" name="active" checked /> Active
