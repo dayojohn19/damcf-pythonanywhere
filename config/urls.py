@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import include, path
 from django.contrib.sitemaps.views import sitemap
 from django.views.generic import TemplateView
+from django.views.generic.base import RedirectView
+from django.templatetags.static import static as static_url
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -17,6 +19,11 @@ sitemaps = {
 }
 
 urlpatterns = [
+    path(
+        "favicon.ico",
+        RedirectView.as_view(url=static_url("img/damcf-logo.png"), permanent=True),
+        name="favicon",
+    ),
     path("admin/", admin.site.urls),
     path("accounts/logout/", core_views.logout_view, name="logout"),
     path("accounts/", include("django.contrib.auth.urls")),

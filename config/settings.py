@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from pathlib import Path
 import os
 from urllib.parse import urlparse
@@ -133,7 +135,7 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 if DEBUG:
@@ -142,7 +144,7 @@ if DEBUG:
 else:
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-MEDIA_URL = "media/"
+MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # Optional: phone number (E.164 digits) for WhatsApp booking requests.
