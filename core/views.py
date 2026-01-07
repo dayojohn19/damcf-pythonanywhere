@@ -16,6 +16,7 @@ from django.contrib import messages
 from django.urls import reverse
 from django.http import JsonResponse
 from django.core.mail import EmailMessage
+from django.db import transaction
 
 from .models import Agent, BookingRequest, ContactMessage, Municipality, Note, Property, PropertyImage, Service, ServiceImage
 from pathlib import Path
@@ -714,31 +715,34 @@ def property_create(request: HttpRequest) -> HttpResponse:
             price = None
 
     if title:
-        prop = Property.objects.create(
-            title=title,
-            created_by=request.user if request.user.is_authenticated else None,
-            municipality=municipality,
-            address=address,
-            description=description,
-            status=status,
-            price=price,
-        )
+        # Create the Property and any PropertyImage rows in a single transaction.
+        # This ensures the post-save signal can run after commit and still see images.
+        with transaction.atomic():
+            prop = Property.objects.create(
+                title=title,
+                created_by=request.user if request.user.is_authenticated else None,
+                municipality=municipality,
+                address=address,
+                description=description,
+                status=status,
+                price=price,
+            )
 
-        # Optional: keep the many-to-many association in sync with the primary FK.
-        if municipality is not None:
-            municipality.properties.add(prop)
+            # Optional: keep the many-to-many association in sync with the primary FK.
+            if municipality is not None:
+                municipality.properties.add(prop)
 
-        if _is_agent(request.user):
-            agent_profile = getattr(request.user, "agent_profile", None)
-            if agent_profile is not None:
-                agent_profile.properties.add(prop)
+            if _is_agent(request.user):
+                agent_profile = getattr(request.user, "agent_profile", None)
+                if agent_profile is not None:
+                    agent_profile.properties.add(prop)
 
-        for uploaded in request.FILES.getlist("images"):
-            url = _upload_file_and_get_url(uploaded, "properties")
-            if url:
-                PropertyImage.objects.create(property=prop, image=url)
-            elif uploaded is not None:
-                messages.error(request, "Could not upload one of the images to Cloudinary. Please try again.")
+            for uploaded in request.FILES.getlist("images"):
+                url = _upload_file_and_get_url(uploaded, "properties")
+                if url:
+                    PropertyImage.objects.create(property=prop, image=url)
+                elif uploaded is not None:
+                    messages.error(request, "Could not upload one of the images to Cloudinary. Please try again.")
 
     if request.headers.get("HX-Request") == "true":
         # return redirect("listings")

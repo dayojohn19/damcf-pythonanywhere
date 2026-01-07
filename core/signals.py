@@ -1,8 +1,25 @@
 import os
 import requests
+from django.db import transaction
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models import Property
+
+
+def _normalize_graph_version(value: str | None) -> str:
+    raw = (value or "").strip()
+    if not raw:
+        return "v18.0"
+    if raw.startswith("v"):
+        return raw
+    if raw[0].isdigit():
+        return f"v{raw}"
+    return raw
+
+
+def _graph_url(path: str, *, graph_version: str) -> str:
+    path = path.lstrip("/")
+    return f"https://graph.facebook.com/{graph_version}/{path}"
 
 
 def post_to_facebook(property_instance):
@@ -75,34 +92,73 @@ def post_to_facebook(property_instance):
     
     message = "\n".join(message_parts)
     
-    # Get all images
+    graph_version = _normalize_graph_version(os.environ.get("FACEBOOK_GRAPH_VERSION") or "v18.0")
+
+    # Get all images (oldest-first by model ordering)
     images = list(property_instance.images.all())
     
     try:
-        # If there are images, post with the first image using the photos endpoint
-        if images and images[0].image:
-            url = f"https://graph.facebook.com/v18.0/{page_id}/photos"
-            
+        # If there are images, create a single multi-photo feed post.
+        # Flow:
+        #   1) Upload each photo as unpublished (published=false)
+        #   2) Create /feed post with attached_media=[{media_fbid: <id>}, ...]
+        public_image_urls: list[str] = []
+        for img in images:
+            raw = getattr(img, "image", None)
+            if not raw:
+                continue
+            s = str(raw).strip()
+            if s.startswith(("http://", "https://")):
+                public_image_urls.append(s)
+
+        # Facebook has practical limits; keep it reasonable.
+        public_image_urls = public_image_urls[:10]
+
+        if public_image_urls:
+            photo_url = _graph_url(f"{page_id}/photos", graph_version=graph_version)
+            media_fbids: list[str] = []
+
+            for image_url in public_image_urls:
+                payload = {
+                    "url": image_url,
+                    "published": "false",
+                    "access_token": page_access_token,
+                }
+                response = requests.post(photo_url, data=payload, timeout=15)
+                if response.status_code != 200:
+                    print(f"✗ Failed to upload photo to Facebook. Status: {response.status_code}")
+                    print(f"Response: {response.text}")
+                    return False
+                result = response.json() or {}
+                fbid = result.get("id")
+                if not fbid:
+                    print("✗ Failed to upload photo to Facebook: missing id in response")
+                    print(f"Response: {response.text}")
+                    return False
+                media_fbids.append(str(fbid))
+
+            feed_url = _graph_url(f"{page_id}/feed", graph_version=graph_version)
+            attached_media = [{"media_fbid": fbid} for fbid in media_fbids]
             payload = {
-                "url": images[0].image,  # Use image URL
-                "caption": message,
+                "message": message,
+                "attached_media": __import__("json").dumps(attached_media),
                 "access_token": page_access_token,
             }
-            
-            response = requests.post(url, data=payload, timeout=15)
-            
+            response = requests.post(feed_url, data=payload, timeout=15)
             if response.status_code == 200:
-                result = response.json()
-                post_id = result.get("id") or result.get("post_id")
-                print(f"✓ Successfully posted property {property_instance.id} to Facebook with image: {post_id}")
+                result = response.json() or {}
+                post_id = result.get("id")
+                print(
+                    f"✓ Successfully posted property {property_instance.id} to Facebook with {len(media_fbids)} image(s): {post_id}"
+                )
                 return True
             else:
-                print(f"✗ Failed to post photo to Facebook. Status: {response.status_code}")
+                print(f"✗ Failed to create feed post with photos. Status: {response.status_code}")
                 print(f"Response: {response.text}")
                 return False
         else:
             # No image - post as text only
-            url = f"https://graph.facebook.com/v18.0/{page_id}/feed"
+            url = _graph_url(f"{page_id}/feed", graph_version=graph_version)
             
             payload = {
                 "message": message,
@@ -134,10 +190,18 @@ def property_created_handler(sender, instance, created, **kwargs):
     Only triggers on creation (not updates).
     """
     if created:
-        # Post to Facebook asynchronously (in production, consider using Celery)
-        # For now, we'll do it synchronously but catch any errors
-        try:
-            post_to_facebook(instance)
-        except Exception as e:
-            # Don't let Facebook posting errors break property creation
-            print(f"Error in Facebook posting handler: {str(e)}")
+        # Delay until after DB commit so related PropertyImage rows (created in the same request)
+        # are visible to this process.
+        def _do_post() -> None:
+            try:
+                prop = (
+                    Property.objects.select_related("municipality")
+                    .prefetch_related("images")
+                    .get(pk=instance.pk)
+                )
+                post_to_facebook(prop)
+            except Exception as e:
+                # Don't let Facebook posting errors break property creation
+                print(f"Error in Facebook posting handler: {str(e)}")
+
+        transaction.on_commit(_do_post)
