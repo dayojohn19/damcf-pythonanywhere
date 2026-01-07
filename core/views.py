@@ -744,9 +744,13 @@ def property_create(request: HttpRequest) -> HttpResponse:
                 elif uploaded is not None:
                     messages.error(request, "Could not upload one of the images to Cloudinary. Please try again.")
 
+        messages.success(request, "Listing saved. Facebook posting finished—check your Facebook Page.")
+
     if request.headers.get("HX-Request") == "true":
-        # return redirect("listings")
-        return _properties_list_partial(request)
+        # Force a full refresh so the user sees a clear completed state.
+        resp = HttpResponse("")
+        resp["HX-Refresh"] = "true"
+        return resp
     return redirect("listings")
 
 

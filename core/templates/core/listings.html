@@ -17,12 +17,29 @@
     
 
     {% if can_create_listing %}
+      <style>
+        /* Minimal HTMX loading indicator behavior (scoped to this page). */
+        .htmx-indicator {
+          display: none;
+        }
+        .htmx-request .htmx-indicator,
+        .htmx-request.htmx-indicator {
+          display: block;
+        }
+      </style>
+
       <form hx-post="{% url 'property_create' %}"
             hx-target="#properties"
             hx-swap="outerHTML"
             hx-encoding="multipart/form-data"
+            hx-indicator="#facebook-posting-indicator"
+            hx-disabled-elt="find button"
             enctype="multipart/form-data">
         {% csrf_token %}
+
+        <div id="facebook-posting-indicator" class="card mb-2.5 htmx-indicator">
+          Posting to Facebook…
+        </div>
 
         <div class="row mb-2.5" style="display: grid;">
           <input type="text" name="title" placeholder="Title (required)" autocomplete="off" />
@@ -46,7 +63,7 @@
         </div>
 
         <div class="mb-2.5">
-          <textarea name="description" placeholder="Description" class="textarea"></textarea>
+          <textarea style="height: 30vh;" name="description" placeholder="Description" class="textarea"></textarea>
         </div>
 
         <div class="column mb-2.5 justify-between">

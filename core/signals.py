@@ -37,9 +37,9 @@ def post_to_facebook(property_instance):
     municipality = property_instance.municipality.name if property_instance.municipality else "Siargao"
     
     message_parts = [
+        f"📋 {property_instance.title}",
         f"🏡 NEW LISTING",
         f"━━━━━━━━━━━━━━━━",
-        f"📋 {property_instance.title}",
         "",
     ]
     
@@ -65,7 +65,7 @@ def post_to_facebook(property_instance):
         # Facebook allows longer posts, so show more
         if len(desc) > 500:
             desc = desc[:497] + "..."
-        message_parts.append("📝 DESCRIPTION:")
+        message_parts.append("📝 INFORMATION:")
         message_parts.append(desc)
         message_parts.append("")
     
