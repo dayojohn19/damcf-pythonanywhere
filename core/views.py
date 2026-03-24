@@ -246,8 +246,10 @@ def contact(request: HttpRequest) -> HttpResponse:
         return "application/json" in accept or (request.headers.get("X-Requested-With") or "") == "fetch"
 
     if request.method == "POST":
-        name = (request.POST.get("name") or "").strip()
-        email = (request.POST.get("email") or "").strip()
+        # Accept both Django field names (name/email) and EmailJS-style field names
+        # (from_name/sender_contact) so JS and non-JS submits behave consistently.
+        name = ((request.POST.get("name") or request.POST.get("from_name") or "").strip())
+        email = ((request.POST.get("email") or request.POST.get("sender_contact") or "").strip())
         message = (request.POST.get("message") or "").strip()
 
         service_post = (
