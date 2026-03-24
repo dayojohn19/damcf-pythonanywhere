@@ -97,9 +97,18 @@ INSTALLED_APPS = [
     "core.apps.CoreConfig",
 ]
 
-_use_cloudinary = _env_bool(os.environ.get("USE_CLOUDINARY"), default=False)
+_cloudinary_storage = {
+    "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME", "").strip(),
+    "API_KEY": os.environ.get("CLOUDINARY_API_KEY", "").strip(),
+    "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET", "").strip(),
+}
+_has_cloudinary_credentials = all(_cloudinary_storage.values())
+
+# Default to Cloudinary uploads unless explicitly disabled.
+_use_cloudinary = _env_bool(os.environ.get("USE_CLOUDINARY"), default=True)
 if _use_cloudinary:
     INSTALLED_APPS += ["cloudinary_storage", "cloudinary"]
+    CLOUDINARY_STORAGE = _cloudinary_storage
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -177,8 +186,10 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Example: 14155552671 (no '+' and no spaces). If empty, WhatsApp redirect is disabled.
 WHATSAPP_BOOKING_PHONE = os.environ.get("WHATSAPP_BOOKING_PHONE", "").strip()
 
-# Store uploaded files on local filesystem by default.
-DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+if _use_cloudinary and _has_cloudinary_credentials:
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+else:
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
