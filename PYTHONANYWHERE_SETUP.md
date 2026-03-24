@@ -37,7 +37,12 @@ CSRF_TRUSTED_ORIGINS=https://digitallife11.pythonanywhere.com
 SECURE_SSL_REDIRECT=1
 SESSION_COOKIE_SECURE=1
 CSRF_COOKIE_SECURE=1
-USE_CLOUDINARY=0
+
+# Cloudinary media uploads
+USE_CLOUDINARY=1
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
 
 # Optional: if using PostgreSQL instead of sqlite
 # DATABASE_URL=postgres://user:password@host:5432/dbname
@@ -54,8 +59,8 @@ USE_CLOUDINARY=0
 Notes:
 - This repo now loads `.env` explicitly from project root in WSGI mode.
 - If `DATABASE_URL` is not set, the app uses sqlite (`db.sqlite3`).
-- Uploads are stored locally under `media/` by default.
-- `USE_CLOUDINARY=0` keeps uploads local even if Cloudinary credentials exist in the environment.
+- Uploads use Cloudinary when `USE_CLOUDINARY=1` and Cloudinary credentials are set.
+- To force local uploads, set `USE_CLOUDINARY=0`.
 
 ## 4) Run migrations and collect static
 

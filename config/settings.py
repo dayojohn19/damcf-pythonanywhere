@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 import os
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 import dj_database_url
 try:
@@ -97,18 +97,38 @@ INSTALLED_APPS = [
     "core.apps.CoreConfig",
 ]
 
-_cloudinary_storage = {
-    "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME", "").strip(),
-    "API_KEY": os.environ.get("CLOUDINARY_API_KEY", "").strip(),
-    "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET", "").strip(),
-}
+def _cloudinary_credentials_from_env() -> dict[str, str]:
+    cloud_name = os.environ.get("CLOUDINARY_CLOUD_NAME", "").strip()
+    api_key = os.environ.get("CLOUDINARY_API_KEY", "").strip()
+    api_secret = os.environ.get("CLOUDINARY_API_SECRET", "").strip()
+
+    # Also support the common single-variable format:
+    # CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>
+    if not (cloud_name and api_key and api_secret):
+        cloudinary_url = os.environ.get("CLOUDINARY_URL", "").strip()
+        if cloudinary_url:
+            parsed = urlparse(cloudinary_url)
+            if parsed.scheme == "cloudinary":
+                cloud_name = cloud_name or (parsed.hostname or "")
+                api_key = api_key or unquote(parsed.username or "")
+                api_secret = api_secret or unquote(parsed.password or "")
+
+    return {
+        "CLOUD_NAME": cloud_name,
+        "API_KEY": api_key,
+        "API_SECRET": api_secret,
+    }
+
+
+_cloudinary_storage = _cloudinary_credentials_from_env()
 _has_cloudinary_credentials = all(_cloudinary_storage.values())
 
-# Default to Cloudinary uploads unless explicitly disabled.
+# Cloudinary-first media uploads unless explicitly disabled.
 _use_cloudinary = _env_bool(os.environ.get("USE_CLOUDINARY"), default=True)
 if _use_cloudinary:
     INSTALLED_APPS += ["cloudinary_storage", "cloudinary"]
-    CLOUDINARY_STORAGE = _cloudinary_storage
+    if _has_cloudinary_credentials:
+        CLOUDINARY_STORAGE = _cloudinary_storage
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
