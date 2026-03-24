@@ -37,7 +37,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY") or _file_secret_key
 
 # Default to DEBUG=False on Heroku (DYNO env var is set).
 DEBUG = _env_bool(os.environ.get("DEBUG"), default=not bool(os.environ.get("DYNO")))
-
+# DEBUG = False  # Force DEBUG=False for production safety; override with env var if needed.
 # Heroku-friendly host/origin configuration.
 # Recommended in Heroku:
 #   heroku config:set ALLOWED_HOSTS=your-app.herokuapp.com,your-custom-domain.com
@@ -84,8 +84,6 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django.contrib.sitemaps",
     "core.apps.CoreConfig",
-    "cloudinary_storage",
-    "cloudinary",
 ]
 
 MIDDLEWARE = [
@@ -128,6 +126,16 @@ DATABASES = {
     )
 }
 
+# sqlite3 backend does not support sslmode; remove it if present.
+if DATABASES["default"].get("ENGINE", "").endswith("sqlite3"):
+    db_options = DATABASES["default"].get("OPTIONS") or {}
+    if isinstance(db_options, dict):
+        db_options.pop("sslmode", None)
+        if db_options:
+            DATABASES["default"]["OPTIONS"] = db_options
+        else:
+            DATABASES["default"].pop("OPTIONS", None)
+
 AUTH_PASSWORD_VALIDATORS = []
 
 LANGUAGE_CODE = "en-us"
@@ -151,37 +159,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Example: 14155552671 (no '+' and no spaces). If empty, WhatsApp redirect is disabled.
 WHATSAPP_BOOKING_PHONE = os.environ.get("WHATSAPP_BOOKING_PHONE", "").strip()
 
-# Cloudinary storage configuration
-# Configure these via environment variables in production (do NOT commit secrets).
-CLOUDINARY_STORAGE = {
-    "CLOUD_NAME": os.environ.get("CLOUDINARY_CLOUD_NAME", ""),
-    "API_KEY": os.environ.get("CLOUDINARY_API_KEY", ""),
-    "API_SECRET": os.environ.get("CLOUDINARY_API_SECRET", ""),
-}
-
-# Also support the common single-var Cloudinary config:
-#   CLOUDINARY_URL=cloudinary://API_KEY:API_SECRET@CLOUD_NAME
-_cloudinary_url = (os.environ.get("CLOUDINARY_URL") or "").strip()
-if _cloudinary_url and not (
-    CLOUDINARY_STORAGE.get("CLOUD_NAME")
-    and CLOUDINARY_STORAGE.get("API_KEY")
-    and CLOUDINARY_STORAGE.get("API_SECRET")
-):
-    try:
-        parsed = urlparse(_cloudinary_url)
-        if parsed.scheme == "cloudinary" and parsed.hostname and parsed.username and parsed.password:
-            CLOUDINARY_STORAGE["CLOUD_NAME"] = parsed.hostname
-            CLOUDINARY_STORAGE["API_KEY"] = parsed.username
-            CLOUDINARY_STORAGE["API_SECRET"] = parsed.password
-    except Exception:
-        pass
-
-# Use Cloudinary for uploaded media files when credentials are provided.
-# Fall back to local file storage if not configured.
-if CLOUDINARY_STORAGE.get("CLOUD_NAME") and CLOUDINARY_STORAGE.get("API_KEY") and CLOUDINARY_STORAGE.get("API_SECRET"):
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-else:
-    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+# All media files are stored locally.
+DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

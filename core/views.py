@@ -25,41 +25,12 @@ from django.core.files.storage import default_storage
 from datetime import date
 from urllib.parse import quote
 
-try:
-    import cloudinary.uploader as _cloudinary_uploader
-    # Only enable Cloudinary usage when credentials are configured in settings
-    creds = getattr(settings, "CLOUDINARY_STORAGE", {}) or {}
-    _HAS_CLOUDINARY = bool(creds.get("API_KEY") and creds.get("API_SECRET") and creds.get("CLOUD_NAME"))
-except Exception:
-    _cloudinary_uploader = None
-    _HAS_CLOUDINARY = False
-
 
 def _upload_file_and_get_url(file_obj, folder: str) -> str | None:
-    """Try to upload `file_obj` to Cloudinary and return URL, else save to MEDIA and return URL."""
+    """Save `file_obj` to local MEDIA storage and return a public URL."""
     if file_obj is None:
         return None
 
-    # In production, require Cloudinary to avoid ephemeral local media on Heroku.
-    if (os.environ.get("DYNO") or not getattr(settings, "DEBUG", True)) and not _HAS_CLOUDINARY:
-        return None
-
-    # Try Cloudinary first
-    if _HAS_CLOUDINARY and _cloudinary_uploader is not None:
-        try:
-            result = _cloudinary_uploader.upload(file_obj, folder=f"realestate/{folder}")
-            secure = result.get("secure_url") or result.get("url")
-            if secure:
-                return secure
-        except Exception as e:
-            print('Cant Save in Cloudinary')
-            print(e)
-
-        # If Cloudinary is configured, do not silently fall back to local storage.
-        # This keeps DB URLs consistent (always Cloudinary) when running in production.
-        return None
-
-    # Fallback: save to the configured Django storage and return a public URL.
     try:
         original_name = getattr(file_obj, "name", "upload") or "upload"
         safe_name = f"{secrets.token_urlsafe(8)}-{original_name}"
@@ -74,7 +45,6 @@ def _upload_file_and_get_url(file_obj, folder: str) -> str | None:
             url = None
 
         if url:
-            # Ensure URL is absolute from site root (avoid relative 'media/...').
             if url.startswith("http") or url.startswith("//") or url.startswith("/"):
                 return url
             return "/" + url.lstrip("/")

@@ -37,5 +37,5 @@ urlpatterns = [
     path("", include("core.urls")),
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Always serve uploaded media files locally (no Cloudinary dependency).
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
