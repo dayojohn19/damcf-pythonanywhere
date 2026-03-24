@@ -5,9 +5,17 @@ import os
 from urllib.parse import urlparse
 
 import dj_database_url
+try:
+    from dotenv import load_dotenv
+except Exception:
+    load_dotenv = None
 from django.core.management.utils import get_random_secret_key
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+if load_dotenv is not None:
+    # PythonAnywhere commonly uses a custom WSGI file, so load .env from settings.
+    load_dotenv(BASE_DIR / ".env")
 
 
 def _env_bool(value: str | None, default: bool = False) -> bool:
