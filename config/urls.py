@@ -37,5 +37,6 @@ urlpatterns = [
     path("", include("core.urls")),
 ]
 
-# Always serve uploaded media files locally (no Cloudinary dependency).
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve local media from Django only in development.
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

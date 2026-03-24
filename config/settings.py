@@ -83,6 +83,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "django.contrib.sitemaps",
+    "cloudinary_storage",
+    "cloudinary",
     "core.apps.CoreConfig",
 ]
 
@@ -159,8 +161,20 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Example: 14155552671 (no '+' and no spaces). If empty, WhatsApp redirect is disabled.
 WHATSAPP_BOOKING_PHONE = os.environ.get("WHATSAPP_BOOKING_PHONE", "").strip()
 
-# All media files are stored locally.
-DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+# Use Cloudinary for persistent media storage when credentials are configured.
+_has_cloudinary_env = bool(
+    os.environ.get("CLOUDINARY_URL")
+    or (
+        os.environ.get("CLOUDINARY_CLOUD_NAME")
+        and os.environ.get("CLOUDINARY_API_KEY")
+        and os.environ.get("CLOUDINARY_API_SECRET")
+    )
+)
+
+if _has_cloudinary_env:
+    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+else:
+    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
