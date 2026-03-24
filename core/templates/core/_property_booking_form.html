@@ -44,36 +44,7 @@
     <div class="actions mt-2">
       <!-- <button class="btn" type="submit">Send request</button> -->
       <!-- <button class="btn" type="submit" name="send_whatsapp" value="1">Send via WhatsApp</button> -->
-      <a class="btn" hx-boost="false"
-         href="{% url 'contact' %}?service={{ property.title|urlencode }}&property={{ property.id }}"
-         onclick="return (function(a){
-           try {
-             const form = document.getElementById('booking-form-{{ property.id }}');
-             const href = a.getAttribute('href') || '';
-             const base = href.split('?')[0] || href;
-             const qs = new URLSearchParams();
-             qs.set('service', '{{ property.title|escapejs }}');
-             qs.set('property', '{{ property.id }}');
-             if (form) {
-               const nameEl = form.querySelector('[name=name]');
-               const emailEl = form.querySelector('[name=email]');
-               const dateEl = form.querySelector('[name=requested_date]');
-               const msgEl = form.querySelector('[name=message]');
-               const name = (nameEl && 'value' in nameEl) ? String(nameEl.value || '').trim() : '';
-               const email = (emailEl && 'value' in emailEl) ? String(emailEl.value || '').trim() : '';
-               const requestedDate = (dateEl && 'value' in dateEl) ? String(dateEl.value || '').trim() : '';
-               const message = (msgEl && 'value' in msgEl) ? String(msgEl.value || '').trim() : '';
-               if (name) qs.set('name', name);
-               if (email) qs.set('email', email);
-               if (requestedDate) qs.set('requested_date', requestedDate);
-               if (message) qs.set('message', message);
-             }
-             window.location.href = base + '?' + qs.toString();
-             return false;
-           } catch (e) {
-             return true;
-           }
-         })(this);">Send via Email</a>
+      <button class="btn" type="submit">Send via Email</button>
       <button class="btn" type="button"
               hx-get="{% url 'property_book' property.id %}?clear=1"
               hx-target="#booking-{{ property.id }}"

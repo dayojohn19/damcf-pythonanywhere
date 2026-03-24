@@ -233,6 +233,8 @@ def contact(request: HttpRequest) -> HttpResponse:
     prefill_email = (request.GET.get("email") or "").strip()
     prefill_requested_date = (request.GET.get("requested_date") or "").strip()
     prefill_user_message = (request.GET.get("message") or "").strip()
+    prefill_address = (request.GET.get("address") or "").strip()
+    prefill_municipality = (request.GET.get("municipality") or "").strip()
     property_id_raw = (request.GET.get("property") or "").strip()
     prop = None
     if property_id_raw:
@@ -268,7 +270,10 @@ def contact(request: HttpRequest) -> HttpResponse:
                     return JsonResponse({"ok": True})
                 return render(request, "core/contact.html", {"success": True})
 
-            # Send email via SMTP (configured in settings).
+            # Contact form uses EmailJS client-side, so always treat as save-only.
+            if _wants_json():
+                return JsonResponse({"ok": True})
+            return render(request, "core/contact.html", {"success": True})
             subject = f"New contact message from {name}"
             if effective_service:
                 subject = f"New booking/contact: {effective_service}  {name}"
@@ -339,10 +344,21 @@ def contact(request: HttpRequest) -> HttpResponse:
         prefill_lines.append(f"Requested date: {prefill_requested_date}")
 
     if prop:
+        if not prefill_address:
+            prefill_address = (prop.address or "").strip()
+        if not prefill_municipality and getattr(prop, "municipality", None):
+            prefill_municipality = (prop.municipality.name or "").strip()
+
         try:
             prop_url = request.build_absolute_uri(reverse("property_detail", kwargs={"pk": prop.pk}))
         except Exception:
             prop_url = ""
+
+        if prefill_address:
+            prefill_lines.append(f"Property address: {prefill_address}")
+
+        if prefill_municipality:
+            prefill_lines.append(f"Municipality: {prefill_municipality}")
 
         if prop_url:
             prefill_lines.append(f"Property link: {prop_url}")
