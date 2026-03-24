@@ -194,10 +194,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 if _on_heroku:
     # Use manifest storage on Heroku (collectstatic runs during build).
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+    _staticfiles_storage_backend = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 else:
     # Locally (DEBUG or not), skip the manifest to avoid needing collectstatic.
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+    _staticfiles_storage_backend = "whitenoise.storage.CompressedStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -207,9 +207,23 @@ MEDIA_ROOT = BASE_DIR / "media"
 WHATSAPP_BOOKING_PHONE = os.environ.get("WHATSAPP_BOOKING_PHONE", "").strip()
 
 if _use_cloudinary and _has_cloudinary_credentials:
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
+    _default_storage_backend = "cloudinary_storage.storage.MediaCloudinaryStorage"
 else:
-    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+    _default_storage_backend = "django.core.files.storage.FileSystemStorage"
+
+# Django 4.2+ / 5+ / 6+ storage configuration.
+STORAGES = {
+    "default": {
+        "BACKEND": _default_storage_backend,
+    },
+    "staticfiles": {
+        "BACKEND": _staticfiles_storage_backend,
+    },
+}
+
+# Backward compatibility for older integrations that still read these settings.
+DEFAULT_FILE_STORAGE = _default_storage_backend
+STATICFILES_STORAGE = _staticfiles_storage_backend
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
