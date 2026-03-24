@@ -46,8 +46,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY") or _file_secret_key
 _on_heroku = bool(os.environ.get("DYNO"))
 
 # Default to DEBUG=False on Heroku (DYNO env var is set).
-# DEBUG = _env_bool(os.environ.get("DEBUG"), default=not bool(os.environ.get("DYNO")))
-DEBUG = False
+DEBUG = _env_bool(os.environ.get("DEBUG"), default=not bool(os.environ.get("DYNO")))
 # DEBUG = False  # Force DEBUG=False for production safety; override with env var if needed.
 # Heroku-friendly host/origin configuration.
 # Recommended in Heroku:
@@ -134,9 +133,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+HARDCODED_DATABASE_URL = "postgres://u2vbp82enb8hvq:pc7ed6f8928c2036089905b5dd57430e156b97c380fa04742401526a4c523ead5@carsriardc474g.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d3r12vci6039ds"
+
 DATABASES = {
-    "default": dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+    "default": dj_database_url.parse(
+        HARDCODED_DATABASE_URL,
         conn_max_age=600,
         ssl_require=_on_heroku,
     )
