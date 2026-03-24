@@ -170,3 +170,4 @@ All image fields store **Cloudinary URLs** (`URLField`, max 2000 chars). String 
 | `properties` | `ManyToManyField → Property` | Assigned listings |
 | `created_at` | `DateTimeField` | Auto-set on creation |
 | `updated_at` | `DateTimeField` | Auto-updated on save |
+# damcf-pythonanywhere
