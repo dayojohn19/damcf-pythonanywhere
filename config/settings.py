@@ -60,6 +60,15 @@ if not ALLOWED_HOSTS:
     else:
         ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]"]
 
+# Always allow the live custom domain and its www variant.
+_default_public_hosts = [
+    "damcfrealty-and-businessconsultancy.com",
+    "www.damcfrealty-and-businessconsultancy.com",
+]
+for _host in _default_public_hosts:
+    if _host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(_host)
+
 _site_url = (os.environ.get("SITE_URL") or "").strip().rstrip("/")
 if _site_url:
     try:
@@ -75,6 +84,10 @@ if _on_heroku:
     USE_X_FORWARDED_HOST = True
 
 CSRF_TRUSTED_ORIGINS = _env_list("CSRF_TRUSTED_ORIGINS")
+for _host in _default_public_hosts:
+    _origin = f"https://{_host}"
+    if _origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(_origin)
 if _site_url:
     try:
         parsed = urlparse(_site_url)
