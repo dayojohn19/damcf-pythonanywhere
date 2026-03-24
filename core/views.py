@@ -567,7 +567,7 @@ def agent_create(request: HttpRequest) -> HttpResponse:
         if photo_file is not None:
             photo_url = _upload_file_and_get_url(photo_file, "agents")
             if not photo_url:
-                messages.error(request, "Agent photo could not be uploaded (Cloudinary not configured or upload failed).")
+                messages.error(request, "Agent photo could not be uploaded. Please try again.")
 
         Agent.objects.create(
             user=user,
@@ -621,7 +621,7 @@ def agent_edit(request: HttpRequest, pk: int) -> HttpResponse:
             if photo_url:
                 agent.photo = photo_url
             else:
-                messages.error(request, "Agent photo could not be uploaded (Cloudinary not configured or upload failed).")
+                messages.error(request, "Agent photo could not be uploaded. Please try again.")
 
         if is_superuser and new_email:
             User = get_user_model()
@@ -712,7 +712,7 @@ def property_create(request: HttpRequest) -> HttpResponse:
                 if url:
                     PropertyImage.objects.create(property=prop, image=url)
                 elif uploaded is not None:
-                    messages.error(request, "Could not upload one of the images to Cloudinary. Please try again.")
+                    messages.error(request, "Could not upload one of the images. Please try again.")
 
         messages.success(request, "Listing saved. Facebook posting finished—check your Facebook Page.")
 
@@ -783,7 +783,7 @@ def property_edit(request: HttpRequest, pk: int) -> HttpResponse:
             if url:
                 PropertyImage.objects.create(property=prop, image=url)
             elif uploaded is not None:
-                messages.error(request, "Could not upload one of the images to Cloudinary. Please try again.")
+                messages.error(request, "Could not upload one of the images. Please try again.")
 
         if request.headers.get("HX-Request") == "true":
             prop.refresh_from_db()

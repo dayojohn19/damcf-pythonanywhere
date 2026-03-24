@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% load cloudinary_extras humanize %}
+{% load static cloudinary_extras humanize %}
 
 {% block title %}{{ property.title }} - {{ property.municipality.name|default:"Siargao" }} | DAMCF Realty{% endblock %}
 
@@ -11,7 +11,7 @@
 {% block og_type %}product{% endblock %}
 {% block og_title %}{{ property.title }} - ₱{{ property.price|intcomma|default:"Contact for price" }}{% endblock %}
 {% block og_description %}{{ property.description|default:"Property for sale in Siargao"|truncatewords:30 }}{% endblock %}
-{% block og_image %}{% if property.images.first %}{{ property.images.first.image|media_url }}{% else %}https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png{% endif %}{% endblock %}
+{% block og_image %}{% if property.images.first %}{{ property.images.first.image|media_url }}{% else %}{{ request.scheme }}://{{ request.get_host }}{% static 'img/damcf-logo.png' %}{% endif %}{% endblock %}
 
 {% block extra_schema %}
 <script type="application/ld+json">

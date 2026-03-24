@@ -87,10 +87,12 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.humanize",
     "django.contrib.sitemaps",
-    "cloudinary_storage",
-    "cloudinary",
     "core.apps.CoreConfig",
 ]
+
+_use_cloudinary = _env_bool(os.environ.get("USE_CLOUDINARY"), default=False)
+if _use_cloudinary:
+    INSTALLED_APPS += ["cloudinary_storage", "cloudinary"]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -166,20 +168,8 @@ MEDIA_ROOT = BASE_DIR / "media"
 # Example: 14155552671 (no '+' and no spaces). If empty, WhatsApp redirect is disabled.
 WHATSAPP_BOOKING_PHONE = os.environ.get("WHATSAPP_BOOKING_PHONE", "").strip()
 
-# Use Cloudinary for persistent media storage when credentials are configured.
-_has_cloudinary_env = bool(
-    os.environ.get("CLOUDINARY_URL")
-    or (
-        os.environ.get("CLOUDINARY_CLOUD_NAME")
-        and os.environ.get("CLOUDINARY_API_KEY")
-        and os.environ.get("CLOUDINARY_API_SECRET")
-    )
-)
-
-if _has_cloudinary_env:
-    DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
-else:
-    DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
+# Store uploaded files on local filesystem by default.
+DEFAULT_FILE_STORAGE = "django.core.files.storage.FileSystemStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -192,15 +182,15 @@ AGENT_DEFAULT_PASSWORD = os.environ.get("AGENT_DEFAULT_PASSWORD", "")
 
 # SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SECURE_SSL_REDIRECT = _env_bool(os.environ.get("SECURE_SSL_REDIRECT"), default=_on_heroku)
-SESSION_COOKIE_SECURE = _on_heroku
-CSRF_COOKIE_SECURE = _on_heroku
+SESSION_COOKIE_SECURE = _env_bool(os.environ.get("SESSION_COOKIE_SECURE"), default=_on_heroku)
+CSRF_COOKIE_SECURE = _env_bool(os.environ.get("CSRF_COOKIE_SECURE"), default=_on_heroku)
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
 
 # Performance & Security optimizations
-SECURE_HSTS_SECONDS = 31536000 if _on_heroku else 0  # 1 year
-SECURE_HSTS_INCLUDE_SUBDOMAINS = _on_heroku
-SECURE_HSTS_PRELOAD = _on_heroku
+SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "31536000" if _on_heroku else "0"))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = _env_bool(os.environ.get("SECURE_HSTS_INCLUDE_SUBDOMAINS"), default=_on_heroku)
+SECURE_HSTS_PRELOAD = _env_bool(os.environ.get("SECURE_HSTS_PRELOAD"), default=_on_heroku)
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = 'SAMEORIGIN'

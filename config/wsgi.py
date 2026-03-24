@@ -12,7 +12,8 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 
 if load_dotenv is not None:
-	load_dotenv()
+	# Always load environment variables from repo-root .env, regardless of cwd.
+	load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 else:
 	env_path = Path(__file__).resolve().parent.parent / ".env"
 	if env_path.exists():

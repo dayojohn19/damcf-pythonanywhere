@@ -1,4 +1,5 @@
 {% load static %}
+{% static 'img/damcf-logo.png' as damcf_logo_url %}
 <!doctype html>
 <html lang="en">
   <head>
@@ -23,7 +24,7 @@
     <meta property="og:site_name" content="DAMCF Realty Incorporated" />
     <meta property="og:title" content="{% block og_title %}DAMCF Realty Incorporated - Real Estate in Siargao{% endblock %}" />
     <meta property="og:description" content="{% block og_description %}Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services.{% endblock %}" />
-    <meta property="og:image" content="{% block og_image %}https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png{% endblock %}" />
+    <meta property="og:image" content="{% block og_image %}{{ request.scheme }}://{{ request.get_host }}{{ damcf_logo_url }}{% endblock %}" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="en_US" />
@@ -33,7 +34,7 @@
     <meta name="twitter:url" content="{{ request.build_absolute_uri }}" />
     <meta name="twitter:title" content="{% block twitter_title %}DAMCF Realty Incorporated - Real Estate in Siargao{% endblock %}" />
     <meta name="twitter:description" content="{% block twitter_description %}Real estate sales and property management, business registration and maintenance consultancy, registration assistance, and related services.{% endblock %}" />
-    <meta name="twitter:image" content="{% block twitter_image %}https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png{% endblock %}" />
+    <meta name="twitter:image" content="{% block twitter_image %}{{ request.scheme }}://{{ request.get_host }}{{ damcf_logo_url }}{% endblock %}" />
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{% static 'img/damcf-logo.png' %}" />
@@ -44,7 +45,6 @@
     <!-- Preconnect to external domains for better performance -->
     <link rel="preconnect" href="https://unpkg.com" crossorigin>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin>
 
     <!-- Structured Data - Base Schema -->
     <script type="application/ld+json">
@@ -53,8 +53,8 @@
         "@type": "RealEstateAgent",
         "name": "DAMCF Realty Incorporated",
         "description": "Real estate sales and property management in siargao island philippines, business registration and maintenance consultancy, registration assistance, and related services.",
-        "logo": "https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png",
-        "image": "https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png",
+        "logo": "{{ request.scheme }}://{{ request.get_host }}{{ damcf_logo_url }}",
+        "image": "{{ request.scheme }}://{{ request.get_host }}{{ damcf_logo_url }}",
         "telephone": "+639980993376",
         "url": "{{ request.build_absolute_uri|cut:request.get_full_path }}",
         "address": {
@@ -143,7 +143,7 @@
 
     <script>
       (function () {
-        const WATERMARK_LOGO_URL = "https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png";
+        const WATERMARK_LOGO_URL = "{{ damcf_logo_url|escapejs }}";
 
         function watermarkImages(root) {
           const scope = root || document;
@@ -472,7 +472,7 @@
         <div 
         style="position: sticky;top: 0;background-color: white;left: 0; z-index: 2;" class="nav-inner">
           <a class="brand row items-center gap-2" href="{% url 'home' %}">
-            <img style="height: auto;width: 5rem;" src="https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png" alt="DAMCF Realty & Brokerage" style="height: 3rem; width: auto;" loading="eager" data-no-watermark />
+            <img style="height: auto;width: 5rem;" src="{{ damcf_logo_url }}" alt="DAMCF Realty & Brokerage" style="height: 3rem; width: auto;" loading="eager" data-no-watermark />
             <span>DAMCF Realty Incorporated</span>
           </a>
           <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-links">
@@ -518,7 +518,7 @@
         <div class="footer-inner">
           <div class="row justify-between items-start flex-wrap gap-3">
             <div>
-              <img src="https://res.cloudinary.com/dzsiogux5/image/upload/v1767356580/Screenshot_2026-01-02_at_8.21.34_PM_buxgyu.png" alt="DAMCF Realty & Brokerage" style="height: 5rem; width: auto; margin-bottom: 0.5rem;" loading="lazy" data-no-watermark />
+              <img src="{{ damcf_logo_url }}" alt="DAMCF Realty & Brokerage" style="height: 5rem; width: auto; margin-bottom: 0.5rem;" loading="lazy" data-no-watermark />
               <img style="width: auto; height: auto; margin: 0 auto;" src="https://res.cloudinary.com/dzsiogux5/image/upload/v1767357294/Screenshot_2026-01-02_at_8.34.34_PM_hxmxmk.png" alt="PRC Licensed" style="height: 5rem; width: auto; margin-bottom: 0.5rem;" loading="lazy" data-no-watermark />
               © {% now "Y" %} DAMCF Realty Incorporated
             </div>
