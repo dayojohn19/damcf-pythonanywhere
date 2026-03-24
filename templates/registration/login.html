@@ -3,8 +3,8 @@
 {% block title %}Login{% endblock %}
 
 {% block content %}
-  <h1 class="h1">Login</h1>
-  <p class="muted">Superusers can manage listings after logging in.</p>
+  <h1 class="h1">Admin Login</h1>
+  <p class="muted">Sign in to manage listings, services, and account settings.</p>
 
   <div class="card mt-4 max-w-[520px]">
     <form method="post" action="{% url 'login' %}">
@@ -19,15 +19,21 @@
 
       <input type="hidden" name="next" value="{{ next }}" />
 
+      <div class="mb-2.5">
+        <label for="id_username" class="muted">Username</label>
+      </div>
       <div class="row mb-2.5">
-        <input type="text" name="username" placeholder="Username" autocomplete="username" />
+        <input id="id_username" type="text" name="username" placeholder="Enter your username" autocomplete="username" required />
       </div>
 
-      <div class="row mb-2.5">
-        <input type="password" name="password" placeholder="Password" autocomplete="current-password" />
+      <div class="mb-2.5">
+        <label for="id_password" class="muted">Password</label>
+      </div>
+      <div class="row mb-3">
+        <input id="id_password" type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required />
       </div>
 
-      <button class="btn primary" type="submit">Login</button>
+      <button class="btn primary block" type="submit">Login</button>
     </form>
   </div>
 {% endblock %}

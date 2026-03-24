@@ -77,3 +77,96 @@ Notes:
 - Push this repo to GitHub
 - In the Heroku dashboard: your app → **Deploy** → connect GitHub repo → enable deploys
 - Still set the same config vars listed above (Heroku dashboard → **Settings** → **Config Vars**)
+
+---
+
+## Database Schema
+
+All image fields store **Cloudinary URLs** (`URLField`, max 2000 chars). String fields use `CharField` (single line) or `TextField` (multi-line).
+
+### Note
+| Field | Type | Notes |
+|-------|------|-------|
+| `text` | `CharField(200)` | Note content |
+| `done` | `BooleanField` | Completion flag |
+| `created_at` | `DateTimeField` | Auto-set on creation |
+
+### Municipality
+| Field | Type | Notes |
+|-------|------|-------|
+| `name` | `CharField(120)` | Unique municipality name |
+| `description` | `TextField` | Optional long description |
+| `properties` | `ManyToManyField → Property` | Extra associated properties |
+| `created_at` | `DateTimeField` | Auto-set on creation |
+| `updated_at` | `DateTimeField` | Auto-updated on save |
+
+### Service
+| Field | Type | Notes |
+|-------|------|-------|
+| `name` | `CharField(120)` | Unique service name |
+| `description` | `TextField` | Optional long description |
+| `image` | `URLField(2000)` | **Image URL** (Cloudinary) |
+| `active` | `BooleanField` | Visibility flag |
+| `created_at` | `DateTimeField` | Auto-set on creation |
+| `updated_at` | `DateTimeField` | Auto-updated on save |
+
+### ServiceImage
+| Field | Type | Notes |
+|-------|------|-------|
+| `service` | `ForeignKey → Service` | Parent service |
+| `image` | `URLField(2000)` | **Image URL** (Cloudinary) |
+| `created_at` | `DateTimeField` | Auto-set on creation |
+
+### Property
+| Field | Type | Notes |
+|-------|------|-------|
+| `title` | `CharField(120)` | Listing title |
+| `municipality` | `ForeignKey → Municipality` | Nullable location |
+| `created_by` | `ForeignKey → User` | Nullable author |
+| `address` | `CharField(255)` | Street address |
+| `price` | `DecimalField(12,2)` | Nullable asking price |
+| `status` | `CharField(20)` | `for_sale` / `for_lease` / `for_rent` / `sold` |
+| `description` | `TextField` | Optional long description |
+| `is_featured` | `BooleanField` | Featured listing flag |
+| `created_at` | `DateTimeField` | Auto-set on creation |
+| `updated_at` | `DateTimeField` | Auto-updated on save |
+
+### PropertyImage
+| Field | Type | Notes |
+|-------|------|-------|
+| `property` | `ForeignKey → Property` | Parent listing |
+| `image` | `URLField(2000)` | **Image URL** (Cloudinary) |
+| `created_at` | `DateTimeField` | Auto-set on creation |
+
+### ContactMessage
+| Field | Type | Notes |
+|-------|------|-------|
+| `name` | `CharField(120)` | Sender name |
+| `email` | `EmailField` | Sender email |
+| `message` | `TextField` | Message body |
+| `created_at` | `DateTimeField` | Auto-set on creation |
+
+### BookingRequest
+| Field | Type | Notes |
+|-------|------|-------|
+| `property` | `ForeignKey → Property` | Target listing |
+| `name` | `CharField(120)` | Requester name |
+| `email` | `EmailField` | Requester email |
+| `requested_date` | `DateField` | Preferred viewing date |
+| `message` | `TextField` | Optional notes |
+| `created_at` | `DateTimeField` | Auto-set on creation |
+
+### Agent
+| Field | Type | Notes |
+|-------|------|-------|
+| `user` | `OneToOneField → User` | Nullable linked user account |
+| `name` | `CharField(120)` | Display name |
+| `title` | `CharField(120)` | Job title |
+| `email` | `EmailField` | Contact email |
+| `phone` | `CharField(50)` | Contact phone |
+| `photo` | `URLField(2000)` | **Image URL** (Cloudinary) |
+| `bio` | `TextField` | Optional biography |
+| `active` | `BooleanField` | Visibility flag |
+| `properties` | `ManyToManyField → Property` | Assigned listings |
+| `created_at` | `DateTimeField` | Auto-set on creation |
+| `updated_at` | `DateTimeField` | Auto-updated on save |

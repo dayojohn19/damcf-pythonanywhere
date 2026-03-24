@@ -35,8 +35,11 @@ else:
 # Allow override via environment (recommended for production).
 SECRET_KEY = os.environ.get("SECRET_KEY") or _file_secret_key
 
+_on_heroku = bool(os.environ.get("DYNO"))
+
 # Default to DEBUG=False on Heroku (DYNO env var is set).
-DEBUG = _env_bool(os.environ.get("DEBUG"), default=not bool(os.environ.get("DYNO")))
+# DEBUG = _env_bool(os.environ.get("DEBUG"), default=not bool(os.environ.get("DYNO")))
+DEBUG = False
 # DEBUG = False  # Force DEBUG=False for production safety; override with env var if needed.
 # Heroku-friendly host/origin configuration.
 # Recommended in Heroku:
@@ -60,8 +63,9 @@ if _site_url:
     except Exception:
         pass
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-USE_X_FORWARDED_HOST = True
+if _on_heroku:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    USE_X_FORWARDED_HOST = True
 
 CSRF_TRUSTED_ORIGINS = _env_list("CSRF_TRUSTED_ORIGINS")
 if _site_url:
@@ -124,7 +128,7 @@ DATABASES = {
     "default": dj_database_url.config(
         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
         conn_max_age=600,
-        ssl_require=not DEBUG,
+        ssl_require=_on_heroku,
     )
 }
 
@@ -148,11 +152,12 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
-if DEBUG:
-    # Avoid requiring `collectstatic` during local development.
-    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
-else:
+if _on_heroku:
+    # Use manifest storage on Heroku (collectstatic runs during build).
     STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+else:
+    # Locally (DEBUG or not), skip the manifest to avoid needing collectstatic.
+    STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -186,16 +191,16 @@ LOGOUT_REDIRECT_URL = "home"
 AGENT_DEFAULT_PASSWORD = os.environ.get("AGENT_DEFAULT_PASSWORD", "")
 
 # SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-SECURE_SSL_REDIRECT = _env_bool(os.environ.get("SECURE_SSL_REDIRECT"), default=not DEBUG)
-SESSION_COOKIE_SECURE = not DEBUG
-CSRF_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = _env_bool(os.environ.get("SECURE_SSL_REDIRECT"), default=_on_heroku)
+SESSION_COOKIE_SECURE = _on_heroku
+CSRF_COOKIE_SECURE = _on_heroku
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
 
 # Performance & Security optimizations
-SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0  # 1 year
-SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
-SECURE_HSTS_PRELOAD = not DEBUG
+SECURE_HSTS_SECONDS = 31536000 if _on_heroku else 0  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = _on_heroku
+SECURE_HSTS_PRELOAD = _on_heroku
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = 'SAMEORIGIN'
