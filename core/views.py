@@ -568,6 +568,41 @@ def agent_create(request: HttpRequest) -> HttpResponse:
                     request,
                     f"Agent account created/updated. Login: {email}  Password: {temp_password} (ask them to change it).",
                 )
+
+                # Send a welcome email to the new agent with their temporary credentials.
+                print(f"[agent_create] Preparing welcome email for new agent: {email}")
+                try:
+                    login_url = request.build_absolute_uri(reverse("login"))
+                except Exception:
+                    login_url = request.build_absolute_uri("/accounts/login/")
+
+                subject = "Your agent account is ready"
+                body = "\n".join([
+                    f"Hi {name},",
+                    "",
+                    "Your DAMC Real Estate agent account has been created.",
+                    f"Login email: {email}",
+                    f"Temporary password: {temp_password}",
+                    "",
+                    "Please log in and change your password immediately.",
+                    f"Login: {login_url}",
+                ])
+                from_email = (getattr(settings, "DEFAULT_FROM_EMAIL", "") or "").strip()
+                if not from_email:
+                    from_email = (getattr(settings, "EMAIL_HOST_USER", "") or "").strip()
+                print(f"[agent_create] Email backend: {settings.EMAIL_BACKEND}")
+                print(f"[agent_create] From: {from_email!r}  To: {email!r}  Subject: {subject!r}")
+                try:
+                    EmailMessage(
+                        subject=subject,
+                        body=body,
+                        from_email=from_email or None,
+                        to=[email],
+                    ).send(fail_silently=False)
+                    print(f"[agent_create] Welcome email sent successfully to {email}")
+                except Exception as e:
+                    print(f"[agent_create] ERROR sending welcome email: {e}")
+                    messages.error(request, f"Agent account created, but invite email could not be sent: {e}")
             else:
                 messages.info(
                     request,
@@ -587,16 +622,30 @@ def agent_create(request: HttpRequest) -> HttpResponse:
             if not photo_url:
                 messages.error(request, "Agent photo could not be uploaded. Please try again.")
 
-        Agent.objects.create(
-            user=user,
-            name=name,
-            title=title,
-            email=email,
-            phone=phone,
-            bio=bio,
-            active=active,
-            photo=photo_url,
-        )
+        # Guard against duplicate agents for the same user account.
+        existing_agent = Agent.objects.filter(user=user).first() if user else None
+        if existing_agent:
+            messages.warning(request, f"An agent profile already exists for {email}. Updating existing profile instead.")
+            existing_agent.name = name
+            existing_agent.title = title
+            existing_agent.email = email
+            existing_agent.phone = phone
+            existing_agent.bio = bio
+            existing_agent.active = active
+            if photo_url:
+                existing_agent.photo = photo_url
+            existing_agent.save()
+        else:
+            Agent.objects.create(
+                user=user,
+                name=name,
+                title=title,
+                email=email,
+                phone=phone,
+                bio=bio,
+                active=active,
+                photo=photo_url,
+            )
 
     if request.headers.get("HX-Request") == "true":
         response = HttpResponse("")

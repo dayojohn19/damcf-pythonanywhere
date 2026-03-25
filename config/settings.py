@@ -9,6 +9,10 @@ try:
     from dotenv import load_dotenv
 except Exception:
     load_dotenv = None
+try:
+    import certifi
+except Exception:
+    certifi = None
 from django.core.management.utils import get_random_secret_key
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -274,7 +278,7 @@ CACHES = {
         }
     }
 }
-
+ 
 # Email (SMTP)
 # To enable SMTP delivery, set at least:
 #   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASSWORD, CONTACT_TO_EMAIL
@@ -296,6 +300,11 @@ if SMTP_HOST and CONTACT_TO_EMAIL:
     EMAIL_HOST_PASSWORD = SMTP_PASSWORD
     EMAIL_USE_TLS = SMTP_USE_TLS
     EMAIL_USE_SSL = SMTP_USE_SSL
+    # On some macOS Python installs, system cert trust is incomplete.
+    # Point Django SMTP to a known CA bundle to avoid TLS verify failures.
+    EMAIL_SSL_CERTFILE = os.environ.get("EMAIL_SSL_CERTFILE", "").strip()
+    if not EMAIL_SSL_CERTFILE and certifi is not None:
+        EMAIL_SSL_CERTFILE = certifi.where()
 else:
     # Dev-friendly fallback: prints email to the console.
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
