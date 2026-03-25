@@ -21,6 +21,10 @@ if load_dotenv is not None:
     # PythonAnywhere commonly uses a custom WSGI file, so load .env from settings.
     load_dotenv(BASE_DIR / ".env")
 
+# Ensure Python SSL can find a valid CA bundle on environments with broken trust store.
+if certifi is not None and not os.environ.get("SSL_CERT_FILE"):
+    os.environ["SSL_CERT_FILE"] = certifi.where()
+
 
 def _env_bool(value: str | None, default: bool = False) -> bool:
     if value is None:
@@ -300,11 +304,6 @@ if SMTP_HOST and CONTACT_TO_EMAIL:
     EMAIL_HOST_PASSWORD = SMTP_PASSWORD
     EMAIL_USE_TLS = SMTP_USE_TLS
     EMAIL_USE_SSL = SMTP_USE_SSL
-    # On some macOS Python installs, system cert trust is incomplete.
-    # Point Django SMTP to a known CA bundle to avoid TLS verify failures.
-    EMAIL_SSL_CERTFILE = os.environ.get("EMAIL_SSL_CERTFILE", "").strip()
-    if not EMAIL_SSL_CERTFILE and certifi is not None:
-        EMAIL_SSL_CERTFILE = certifi.where()
 else:
     # Dev-friendly fallback: prints email to the console.
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
