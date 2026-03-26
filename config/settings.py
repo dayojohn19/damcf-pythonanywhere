@@ -183,6 +183,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
+# HARDCODED_DATABASE_URL = "postgres://u2vbp82enb8hvq:pc7ed6f8928c2036089905b5dd57430e156b97c380fa04742401526a4c523ead5@carsriardc474g.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d3r12vci6039ds"
 HARDCODED_DATABASE_URL = "postgres://u2vbp82enb8hvq:pc7ed6f8928c2036089905b5dd57430e156b97c380fa04742401526a4c523ead5@carsriardc474g.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com:5432/d3r12vci6039ds"
 
 DATABASES = {
@@ -192,6 +193,13 @@ DATABASES = {
         ssl_require=_on_heroku,
     )
 }
+# Use SQLite3 for local development
+# DATABASES = {
+#     "default": {
+#         "ENGINE": "django.db.backends.sqlite3",
+#         "NAME": BASE_DIR / "database.sqlite3",
+#     }
+# }
 
 # sqlite3 backend does not support sslmode; remove it if present.
 if DATABASES["default"].get("ENGINE", "").endswith("sqlite3"):
