@@ -52,6 +52,38 @@
         </div>
       </form>
     </div>
+  {% elif not user.is_authenticated %}
+    <div class="card mt-4" id="agent-signup">
+      <h2 class="h2 mt-0">Sign Up As Agent</h2>
+      <p class="muted mt-1.5">Create your account and agent profile to get started. We will email you a temporary password so you can sign in and change it.</p>
+
+      <form method="post"
+            action="{% url 'agent_signup' %}"
+            enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="column mb-2.5">
+          <input type="text" class="mb-2.5" name="name" placeholder="Full name" autocomplete="name" required />
+          <input type="text" name="title" placeholder="Title" autocomplete="organization-title" />
+        </div>
+
+        <div class="column mb-2.5">
+          <input class="mb-2.5" type="email" name="email" placeholder="Email address" autocomplete="email" required />
+          <input type="text" name="phone" placeholder="Phone" autocomplete="tel" />
+        </div>
+
+        <div class="mb-2.5">
+          <textarea name="bio" placeholder="Short bio" class="textarea"></textarea>
+        </div>
+
+        <div class="columnjustify-between">
+          <div class="column gap-3">
+            <input type="file" name="photo" accept="image/*" />
+          </div>
+          <button class="btn primary" type="submit">Sign up</button>
+        </div>
+      </form>
+    </div>
   {% endif %}
 
   <div class="card mt-4">

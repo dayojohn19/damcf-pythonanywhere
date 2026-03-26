@@ -495,6 +495,7 @@
                 <button type="submit" class="link link-button w-full text-left">Logout</button>
               </form>
             {% else %}
+              <a class="link" href="{% url 'agents' %}#agent-signup">Sign up</a>
               <a class="link" href="{% url 'login' %}">Login</a>
             {% endif %}
           </nav>

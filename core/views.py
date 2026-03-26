@@ -70,6 +70,35 @@ def _can_create_listing(user) -> bool:
     return _is_superuser(user) or _is_agent(user)
 
 
+def _send_agent_credentials_email(request: HttpRequest, *, name: str, email: str, temp_password: str) -> None:
+    try:
+        login_url = request.build_absolute_uri(reverse("login"))
+    except Exception:
+        login_url = request.build_absolute_uri("/accounts/login/")
+
+    subject = "Your agent account is ready"
+    body = "\n".join([
+        f"Hi {name},",
+        "",
+        "Your DAMC Real Estate agent account has been created.",
+        f"Login email: {email}",
+        f"Temporary password: {temp_password}",
+        "",
+        "Please log in and change your password immediately.",
+        f"Login: {login_url}",
+    ])
+    from_email = (getattr(settings, "DEFAULT_FROM_EMAIL", "") or "").strip()
+    if not from_email:
+        from_email = (getattr(settings, "EMAIL_HOST_USER", "") or "").strip()
+
+    EmailMessage(
+        subject=subject,
+        body=body,
+        from_email=from_email or None,
+        to=[email],
+    ).send(fail_silently=False)
+
+
 def _selected_municipality_id(request: HttpRequest) -> int | None:
     raw = (request.GET.get("municipality") or "").strip()
     if not raw:
@@ -401,6 +430,71 @@ def agents(request: HttpRequest) -> HttpResponse:
     return render(request, "core/agents.html", {"agents": qs, "my_agent": my_agent})
 
 
+@require_POST
+def agent_signup(request: HttpRequest) -> HttpResponse:
+    if request.user.is_authenticated:
+        return redirect("agents")
+
+    name = (request.POST.get("name") or "").strip()
+    title = (request.POST.get("title") or "").strip()
+    email = (request.POST.get("email") or "").strip().lower()
+    phone = (request.POST.get("phone") or "").strip()
+    bio = (request.POST.get("bio") or "").strip()
+
+    errors: list[str] = []
+    if not name:
+        errors.append("Name is required.")
+    if not email:
+        errors.append("Email is required.")
+
+    User = get_user_model()
+    if email and User.objects.filter(username__iexact=email).exists():
+        errors.append("An account with this email already exists. Please log in instead.")
+
+    if errors:
+        for error in errors:
+            messages.error(request, error)
+        response = redirect("agents")
+        response["Location"] += "#agent-signup"
+        return response
+
+    temp_password = settings.AGENT_DEFAULT_PASSWORD or secrets.token_urlsafe(12)
+
+    with transaction.atomic():
+        user = User.objects.create_user(username=email, email=email, password=temp_password)
+        agents_group, _ = Group.objects.get_or_create(name="Agents")
+        user.groups.add(agents_group)
+
+        photo_url = None
+        photo_file = request.FILES.get("photo")
+        if photo_file is not None:
+            photo_url = _upload_file_and_get_url(photo_file, "agents")
+            if not photo_url:
+                messages.error(request, "Profile photo could not be uploaded. You can add it later.")
+
+        agent = Agent.objects.create(
+            user=user,
+            name=name,
+            title=title,
+            email=email,
+            phone=phone,
+            bio=bio,
+            active=True,
+            photo=photo_url,
+        )
+
+    try:
+        _send_agent_credentials_email(request, name=name, email=email, temp_password=temp_password)
+        messages.success(request, "Your agent account has been created. Check your email for your temporary password and change it after logging in.")
+    except Exception as exc:
+        messages.warning(
+            request,
+            f"Your agent account was created, but the email with your temporary password could not be sent: {exc}",
+        )
+
+    return redirect("login")
+
+
 def municipalities(request: HttpRequest) -> HttpResponse:
     qs = Municipality.objects.order_by("name")
     return render(request, "core/municipalities.html", {"municipalities": qs})
@@ -571,34 +665,9 @@ def agent_create(request: HttpRequest) -> HttpResponse:
 
                 # Send a welcome email to the new agent with their temporary credentials.
                 print(f"[agent_create] Preparing welcome email for new agent: {email}")
-                try:
-                    login_url = request.build_absolute_uri(reverse("login"))
-                except Exception:
-                    login_url = request.build_absolute_uri("/accounts/login/")
-
-                subject = "Your agent account is ready"
-                body = "\n".join([
-                    f"Hi {name},",
-                    "",
-                    "Your DAMC Real Estate agent account has been created.",
-                    f"Login email: {email}",
-                    f"Temporary password: {temp_password}",
-                    "",
-                    "Please log in and change your password immediately.",
-                    f"Login: {login_url}",
-                ])
-                from_email = (getattr(settings, "DEFAULT_FROM_EMAIL", "") or "").strip()
-                if not from_email:
-                    from_email = (getattr(settings, "EMAIL_HOST_USER", "") or "").strip()
                 print(f"[agent_create] Email backend: {settings.EMAIL_BACKEND}")
-                print(f"[agent_create] From: {from_email!r}  To: {email!r}  Subject: {subject!r}")
                 try:
-                    EmailMessage(
-                        subject=subject,
-                        body=body,
-                        from_email=from_email or None,
-                        to=[email],
-                    ).send(fail_silently=False)
+                    _send_agent_credentials_email(request, name=name, email=email, temp_password=temp_password)
                     print(f"[agent_create] Welcome email sent successfully to {email}")
                 except Exception as e:
                     print(f"[agent_create] ERROR sending welcome email: {e}")

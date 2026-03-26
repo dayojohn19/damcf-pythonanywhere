@@ -28,6 +28,7 @@ urlpatterns = [
     path("property-images/<int:pk>/delete/", views.property_image_delete, name="property_image_delete"),
 
     # Agents management
+    path("agents/signup/", views.agent_signup, name="agent_signup"),
     path("agents/create/", views.agent_create, name="agent_create"),
     path("agents/<int:pk>/edit/", views.agent_edit, name="agent_edit"),
     path("agents/<int:pk>/delete/", views.agent_delete, name="agent_delete"),
