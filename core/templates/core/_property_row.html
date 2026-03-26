@@ -33,9 +33,9 @@
 
   <div class="actions flex-wrap">
     <a class="btn" href="{% url 'property_detail' prop.id %}">View</a>
-    <a class="btn"
+    <a class="btn primary btn-sweep"
        href="{% url 'contact' %}?property={{ prop.id }}{% if prop.address %}&address={{ prop.address|urlencode }}{% endif %}{% if prop.municipality %}&municipality={{ prop.municipality.name|urlencode }}{% endif %}"
-       onclick="this.setAttribute('aria-busy', 'true'); this.style.pointerEvents='none'; this.textContent='Loading...';">Book now</a>
+       onclick="this.setAttribute('aria-busy', 'true'); this.style.pointerEvents='none'; this.textContent='Preparing your tour...';">Book a Guided Tour</a>
     {% if user.is_authenticated %}
       {% if user.is_superuser %}
         <form hx-post="{% url 'property_set_featured' prop.id %}"

@@ -83,13 +83,13 @@
     {% endif %}
   </div>
 
-  <div class="mt-3">
-    <button class="btn" type="button"
-            onclick="this.setAttribute('aria-busy','true'); this.style.pointerEvents='none'; this.textContent='Loading...'; window.location.href='{% url 'contact' %}?property={{ property.id }}{% if property.address %}&address={{ property.address|urlencode }}{% endif %}{% if property.municipality %}&municipality={{ property.municipality.name|urlencode }}{% endif %}';">
-      Book now
+  <div class="mt-3 book-tour-sticky-wrap">
+    <button class="btn primary btn-sweep" type="button"
+            onclick="this.setAttribute('aria-busy','true'); this.style.pointerEvents='none'; this.textContent='Preparing your tour...'; window.location.href='{% url 'contact' %}?property={{ property.id }}{% if property.address %}&address={{ property.address|urlencode }}{% endif %}{% if property.municipality %}&municipality={{ property.municipality.name|urlencode }}{% endif %}';">
+      Book a Guided Tour
     </button>
-    <div id="booking-{{ property.id }}" class="w-full"></div>
   </div>
+  <div id="booking-{{ property.id }}" class="w-full"></div>
 
     <div class="grid mt-4">
     {% for img in property.images.all %}
