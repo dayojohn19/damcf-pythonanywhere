@@ -64,9 +64,9 @@ ALLOWED_HOSTS = _env_list("ALLOWED_HOSTS")
 if not ALLOWED_HOSTS:
     if os.environ.get("DYNO") and not DEBUG:
         # Allow the Heroku app domain (still recommend setting ALLOWED_HOSTS explicitly).
-        ALLOWED_HOSTS = [".herokuapp.com","digitallife11.pythonanywhere.com","damcfrealty-and-businessconsultancy.com"]
+        ALLOWED_HOSTS = [".herokuapp.com","digitallife11.pythonanywhere.com","damcfrealty-and-businessconsultancy.com,www.damcfrealty-and-businessconsultancy.com"]
     else:
-        ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]","digitallife11.pythonanywhere.com","damcfrealty-and-businessconsultancy.com"]
+        ALLOWED_HOSTS = ["localhost", "127.0.0.1", "[::1]","digitallife11.pythonanywhere.com","damcfrealty-and-businessconsultancy.com,www.damcfrealty-and-businessconsultancy.com"]
 
 # Always allow the live custom domain and its www variant.
 _default_public_hosts = [
